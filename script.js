@@ -20,7 +20,7 @@ const BrainField = (() => {
   if (!canvas) return null;
   const ctx = canvas.getContext("2d");
 
-  const GREY = [148, 160, 184];
+  const GREY = [154, 164, 184];
   const COL = [
     [150, 78, 196], [78, 146, 214], [60, 196, 110], [206, 104, 240],
     [232, 212, 140], [240, 152, 64], [228, 84, 102],
@@ -55,7 +55,7 @@ const BrainField = (() => {
   const SPONT = [.08, .07, .11, .16, .08, .22, .36];
   const NET_GAIN = [.84, .78, .95, 1.04, .86, 1.22, 1.45];
   const NET_SPREAD = [.13, .12, .16, .16, .14, .20, .24];
-  const REST_BIAS = [.012, .010, .016, .022, .016, .045, .078];
+  const REST_BIAS = [.0025, .002, .0035, .005, .003, .010, .016];
 
   let W_ = 0, H = 0, dpr = 1, RAD = 320, cx = 0, cy = 0;
   let nodes = [], nodesByNet = [], edges = [], edgesByNet = [], order = [];
@@ -102,7 +102,7 @@ const BrainField = (() => {
       const x = (Math.random() * 2 - 1) * 0.55, y = (Math.random() * 2 - 1) * 0.46, z = (Math.random() * 2 - 1) * 0.64;
       if (!inBrain(x, y, z)) continue;
       const p = assignParcel(x, y, z);
-      nodes.push({ x, y, z, net: p.net, parcel: p.parcel, size: 0.42 + Math.random() * 0.82, act: 0, sx: 0, sy: 0, depth: 0, scale: 1 });
+      nodes.push({ x, y, z, net: p.net, parcel: p.parcel, size: 0.24 + Math.random() * 0.48, act: 0, sx: 0, sy: 0, depth: 0, scale: 1 });
     }
     order = nodes.map((_, i) => i);
     nodesByNet = Array.from({ length: 7 }, () => []);
@@ -287,12 +287,13 @@ const BrainField = (() => {
     for (const p of PARCELS) {
       const q = projectPoint(p.x, p.y, p.z, t);
       const c = COL[p.net];
+      const pc = [mix(GREY[0], c[0], 0.035), mix(GREY[1], c[1], 0.035), mix(GREY[2], c[2], 0.035)];
       const fog = 0.25 + 0.55 * clamp((q.depth + 0.7) / 1.4, 0, 1);
       const r = RAD * q.scale * (0.038 + (p.parcel % 3) * 0.006);
       const g = ctx.createRadialGradient(q.sx, q.sy, 0, q.sx, q.sy, r);
-      g.addColorStop(0, `rgba(${c[0]},${c[1]},${c[2]},${0.07 * fog})`);
-      g.addColorStop(0.58, `rgba(${c[0]},${c[1]},${c[2]},${0.024 * fog})`);
-      g.addColorStop(1, `rgba(${c[0]},${c[1]},${c[2]},0)`);
+      g.addColorStop(0, `rgba(${pc[0] | 0},${pc[1] | 0},${pc[2] | 0},${0.052 * fog})`);
+      g.addColorStop(0.58, `rgba(${pc[0] | 0},${pc[1] | 0},${pc[2] | 0},${0.018 * fog})`);
+      g.addColorStop(1, `rgba(${pc[0] | 0},${pc[1] | 0},${pc[2] | 0},0)`);
       ctx.fillStyle = g;
       ctx.beginPath();
       ctx.arc(q.sx, q.sy, r, 0, 6.2832);
@@ -323,25 +324,27 @@ const BrainField = (() => {
       const angle = 0.5 * Math.atan2(2 * cov, vx - vy);
       const depth = s.depth / s.c;
       const fog = 0.32 + 0.68 * clamp((depth + 0.7) / 1.4, 0, 1);
-      const col = COL[s.net];
       const active = clamp(s.act, 0, 1.4);
+      const c = COL[s.net];
+      const tint = clamp(active * 0.55, 0.045, 1);
+      const col = [mix(GREY[0], c[0], tint), mix(GREY[1], c[1], tint), mix(GREY[2], c[2], tint)];
       ctx.translate(mx, my);
       ctx.rotate(angle);
-      ctx.shadowColor = `rgba(${col[0]},${col[1]},${col[2]},0.32)`;
-      ctx.shadowBlur = 5 + active * 5;
+      ctx.shadowColor = `rgba(${col[0] | 0},${col[1] | 0},${col[2] | 0},${0.08 + active * 0.18})`;
+      ctx.shadowBlur = 2 + active * 4;
       ctx.beginPath();
       ctx.ellipse(0, 0, a, b, 0, 0, 6.2832);
-      ctx.fillStyle = `rgba(${col[0]},${col[1]},${col[2]},${(0.018 + active * 0.022) * fog})`;
+      ctx.fillStyle = `rgba(${col[0] | 0},${col[1] | 0},${col[2] | 0},${(0.008 + active * 0.018) * fog})`;
       ctx.fill();
-      ctx.strokeStyle = `rgba(${col[0]},${col[1]},${col[2]},${(0.24 + active * 0.18) * fog})`;
-      ctx.lineWidth = 0.9 + active * 0.55;
+      ctx.strokeStyle = `rgba(${col[0] | 0},${col[1] | 0},${col[2] | 0},${(0.16 + active * 0.14) * fog})`;
+      ctx.lineWidth = 0.46 + active * 0.34;
       ctx.setLineDash([4, 5.5]);
       ctx.stroke();
       ctx.shadowBlur = 0;
       ctx.beginPath();
       ctx.ellipse(0, 0, a * 0.63, b * 0.63, 0, 0, 6.2832);
-      ctx.strokeStyle = `rgba(${col[0]},${col[1]},${col[2]},${(0.08 + active * 0.07) * fog})`;
-      ctx.lineWidth = 0.55;
+      ctx.strokeStyle = `rgba(${col[0] | 0},${col[1] | 0},${col[2] | 0},${(0.045 + active * 0.08) * fog})`;
+      ctx.lineWidth = 0.32 + active * 0.2;
       ctx.setLineDash([]);
       ctx.stroke();
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -361,16 +364,16 @@ const BrainField = (() => {
       if (act > 0.05) {
         const c = a.act > b.act ? COL[a.net] : COL[b.net];
         col = [mix(GREY[0], c[0], act), mix(GREY[1], c[1], act), mix(GREY[2], c[2], act)];
-        alpha = (0.05 + e.w * 0.05) * fog + act * 0.22;
+        alpha = (0.026 + e.w * 0.026) * fog + act * 0.11;
       } else {
         const c = sameNet ? COL[a.net] : GREY;
-        const tint = sameNet ? 0.12 : 0;
+        const tint = sameNet ? 0.025 : 0;
         col = [mix(GREY[0], c[0], tint), mix(GREY[1], c[1], tint), mix(GREY[2], c[2], tint)];
-        alpha = (0.026 + e.w * 0.04) * fog * (sameNet ? 1 : 0.42) * (sameParcel ? 1.28 : 1);
+        alpha = (0.014 + e.w * 0.022) * fog * (sameNet ? 0.82 : 0.32) * (sameParcel ? 1.18 : 1);
       }
-      alpha *= e.long ? (act > 0.05 ? 1.45 : 0.35) : 1;
+      alpha *= e.long ? (act > 0.05 ? 1.12 : 0.32) : 1;
       ctx.strokeStyle = `rgba(${col[0] | 0},${col[1] | 0},${col[2] | 0},${alpha})`;
-      ctx.lineWidth = (e.long ? 0.42 : 0.5) + act * (e.long ? 1.0 : 0.7);
+      ctx.lineWidth = (e.long ? 0.22 : 0.25) + act * (e.long ? 0.52 : 0.32);
       ctx.beginPath(); ctx.moveTo(a.sx, a.sy); ctx.lineTo(b.sx, b.sy); ctx.stroke();
     }
   }
@@ -379,17 +382,17 @@ const BrainField = (() => {
     for (const k of order) {
       const n = nodes[k], a = n.act, c = COL[n.net];
       const fog = 0.35 + 0.65 * clamp((n.depth + 0.7) / 1.4, 0, 1);
-      const baseTint = 0.075 + (n.parcel % 4) * 0.008;
+      const baseTint = 0.012 + (n.parcel % 4) * 0.003;
       const tint = a > 0.05 ? Math.min(1, baseTint + a) : baseTint;
       const col = [mix(GREY[0], c[0], tint) | 0, mix(GREY[1], c[1], tint) | 0, mix(GREY[2], c[2], tint) | 0];
-      const r = n.size * n.scale * (1 + a * 0.8);
-      if (a > 0.05) { ctx.beginPath(); ctx.arc(n.sx, n.sy, r * 4, 0, 6.2832); ctx.fillStyle = `rgba(${col[0]},${col[1]},${col[2]},${a * 0.09 * fog})`; ctx.fill(); }
+      const r = n.size * n.scale * (1 + a * 0.55);
+      if (a > 0.05) { ctx.beginPath(); ctx.arc(n.sx, n.sy, r * 3.4, 0, 6.2832); ctx.fillStyle = `rgba(${col[0]},${col[1]},${col[2]},${a * 0.075 * fog})`; ctx.fill(); }
       ctx.beginPath(); ctx.arc(n.sx, n.sy, r, 0, 6.2832);
-      ctx.fillStyle = `rgba(${col[0]},${col[1]},${col[2]},${(0.18 + a * 0.62) * fog})`; ctx.fill();
-      if (a < 0.05 && n.parcel % 5 === 0) {
+      ctx.fillStyle = `rgba(${col[0]},${col[1]},${col[2]},${(0.12 + a * 0.6) * fog})`; ctx.fill();
+      if (a < 0.05 && n.parcel % 7 === 0) {
         ctx.beginPath(); ctx.arc(n.sx, n.sy, r * 1.9, 0, 6.2832);
-        ctx.strokeStyle = `rgba(${c[0]},${c[1]},${c[2]},${0.055 * fog})`;
-        ctx.lineWidth = 0.35;
+        ctx.strokeStyle = `rgba(${GREY[0]},${GREY[1]},${GREY[2]},${0.04 * fog})`;
+        ctx.lineWidth = 0.22;
         ctx.stroke();
       }
     }
@@ -400,15 +403,15 @@ const BrainField = (() => {
       p.t += p.v;
       const a = nodes[p.a], b = nodes[p.b], c = p.c;
       const x = a.sx + (b.sx - a.sx) * p.t, y = a.sy + (b.sy - a.sy) * p.t;
-      ctx.beginPath(); ctx.arc(x, y, p.long ? 2.4 : 1.8, 0, 6.2832); ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${p.long ? 0.82 : 0.95})`; ctx.fill();
-      ctx.beginPath(); ctx.arc(x, y, p.long ? 8 : 5.5, 0, 6.2832); ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${p.long ? 0.16 : 0.11})`; ctx.fill();
+      ctx.beginPath(); ctx.arc(x, y, p.long ? 1.85 : 1.35, 0, 6.2832); ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${p.long ? 0.82 : 0.95})`; ctx.fill();
+      ctx.beginPath(); ctx.arc(x, y, p.long ? 6.2 : 4.2, 0, 6.2832); ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${p.long ? 0.14 : 0.095})`; ctx.fill();
     }
   }
   function drawSparks() {
     sparks = sparks.filter((s) => s.life > 0.04);
     for (const s of sparks) {
       s.x += s.vx; s.y += s.vy; s.vx *= 0.92; s.vy *= 0.92; s.life *= 0.9;
-      ctx.beginPath(); ctx.arc(s.x, s.y, 1.8 * s.life, 0, 6.2832);
+      ctx.beginPath(); ctx.arc(s.x, s.y, 1.35 * s.life, 0, 6.2832);
       ctx.fillStyle = `rgba(${s.c[0]},${s.c[1]},${s.c[2]},${s.life})`; ctx.fill();
     }
   }
