@@ -25,20 +25,23 @@ const BrainField = (() => {
     [150, 78, 196], [78, 146, 214], [60, 196, 110], [206, 104, 240],
     [232, 212, 140], [240, 152, 64], [228, 84, 102],
   ];
-  // network ROI centroids in normalised brain space (x right, y superior, z anterior), right hemisphere
-  const CENT_R = [
-    [[0.16, -0.04, -0.80], [0.34, -0.10, -0.60]],                         // 0 Visual (occipital)
-    [[0.40, 0.46, 0.02], [0.22, 0.55, -0.02]],                            // 1 Somatomotor (central)
-    [[0.34, 0.42, -0.34], [0.30, 0.40, 0.34]],                            // 2 Dorsal Attn (sup parietal + FEF)
-    [[0.50, 0.10, -0.06], [0.12, 0.34, 0.22]],                            // 3 Ventral Attn (insula/TPJ + dACC)
-    [[0.30, -0.46, 0.40], [0.14, -0.42, 0.52]],                           // 4 Limbic (temporal pole/OFC)
-    [[0.48, 0.34, 0.48], [0.46, 0.30, -0.42]],                            // 5 Frontoparietal (dlPFC + IPL)
-    [[0.08, 0.22, 0.66], [0.06, 0.26, -0.54], [0.46, 0.30, -0.48], [0.54, -0.18, 0.0]], // 6 Default
+  // Approximate right-hemisphere parcel anchors in normalised brain space
+  // (x right, y superior, z anterior), mirrored to the left hemisphere below.
+  const PARCELS_R = [
+    [[0.12, -0.02, -0.84], [0.32, -0.10, -0.67], [0.18, 0.18, -0.74]], // 0 Visual
+    [[0.28, 0.55, -0.04], [0.42, 0.42, 0.10], [0.50, 0.02, -0.18]],   // 1 Somatomotor
+    [[0.34, 0.43, -0.36], [0.40, 0.34, 0.38], [0.16, 0.48, -0.16]],   // 2 Dorsal attention
+    [[0.50, 0.10, -0.06], [0.18, 0.34, 0.24], [0.44, 0.04, 0.32]],    // 3 Ventral attention / salience
+    [[0.30, -0.46, 0.40], [0.14, -0.42, 0.52], [0.44, -0.22, 0.16]],  // 4 Limbic
+    [[0.48, 0.34, 0.48], [0.46, 0.30, -0.42], [0.22, 0.22, 0.46], [0.30, 0.46, -0.16]], // 5 Frontoparietal
+    [[0.08, 0.22, 0.66], [0.06, 0.26, -0.54], [0.46, 0.30, -0.48], [0.54, -0.18, 0.0], [0.20, -0.32, 0.28], [0.04, -0.08, 0.18]], // 6 Default
   ];
-  const CENT = CENT_R.map((list) => {
-    const out = [];
-    for (const c of list) { out.push(c); out.push([-c[0], c[1], c[2]]); }
-    return out;
+  const PARCELS = [];
+  PARCELS_R.forEach((list, net) => {
+    list.forEach((c, idx) => {
+      PARCELS.push({ x: c[0], y: c[1], z: c[2], net, parcel: idx * 2 });
+      PARCELS.push({ x: -c[0], y: c[1], z: c[2], net, parcel: idx * 2 + 1 });
+    });
   });
   const W = [
     [1.0, .30, .42, .20, .12, .18, .12],
@@ -61,14 +64,14 @@ const BrainField = (() => {
   let pointerX = 0, pointerY = 0;
   const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
   const mix = (a, b, t) => a + (b - a) * t;
-  const tiltX = -0.34, FOCAL = 2.7;
+  const tiltX = -0.49, tiltZ = 0.075, FOCAL = 2.85;
 
   function nodeCount() {
     const w = window.innerWidth;
-    if (w < 620) return 300;
-    if (w < 980) return 480;
-    if (w < 1400) return 720;
-    return 900;
+    if (w < 620) return 520;
+    if (w < 980) return 860;
+    if (w < 1400) return 1350;
+    return 1900;
   }
 
   function inBrain(x, y, z) {
@@ -79,13 +82,13 @@ const BrainField = (() => {
     if (y > 0.12 && Math.abs(x) < 0.035) return false; // longitudinal fissure groove
     return true;
   }
-  function assignNet(x, y, z) {
-    let best = Infinity, bn = 6;
-    for (let i = 0; i < 7; i++) for (const c of CENT[i]) {
-      const d = (x - c[0]) ** 2 + (y - c[1]) ** 2 + (z - c[2]) ** 2;
-      if (d < best) { best = d; bn = i; }
+  function assignParcel(x, y, z) {
+    let best = Infinity, hit = PARCELS[PARCELS.length - 1];
+    for (const p of PARCELS) {
+      const d = (x - p.x) ** 2 + (y - p.y) ** 2 + (z - p.z) ** 2;
+      if (d < best) { best = d; hit = p; }
     }
-    return bn;
+    return hit;
   }
 
   function build() {
@@ -95,18 +98,19 @@ const BrainField = (() => {
       guard++;
       const x = (Math.random() * 2 - 1) * 0.55, y = (Math.random() * 2 - 1) * 0.46, z = (Math.random() * 2 - 1) * 0.64;
       if (!inBrain(x, y, z)) continue;
-      nodes.push({ x, y, z, net: assignNet(x, y, z), size: 0.7 + Math.random() * 1.4, act: 0, sx: 0, sy: 0, depth: 0, scale: 1 });
+      const p = assignParcel(x, y, z);
+      nodes.push({ x, y, z, net: p.net, parcel: p.parcel, size: 0.42 + Math.random() * 0.82, act: 0, sx: 0, sy: 0, depth: 0, scale: 1 });
     }
     order = nodes.map((_, i) => i);
     // precompute rigid edges (3D knn within radius, filtered by connectivity)
     edges = [];
-    const N = nodes.length, rE2 = 0.18 * 0.18, maxDeg = 10, seen = new Set();
+    const N = nodes.length, rE2 = 0.145 * 0.145, maxDeg = 8, seen = new Set();
     for (let i = 0; i < N; i++) {
       const a = nodes[i], cand = [];
       for (let j = 0; j < N; j++) {
         if (j === i) continue;
         const b = nodes[j];
-        if (W[a.net][b.net] < 0.16) continue;
+        if (W[a.net][b.net] < 0.14) continue;
         const d2 = (a.x - b.x) ** 2 + (a.y - b.y) ** 2 + (a.z - b.z) ** 2;
         if (d2 < rE2) cand.push([d2, j]);
       }
@@ -125,19 +129,26 @@ const BrainField = (() => {
     canvas.width = Math.floor(W_ * dpr); canvas.height = Math.floor(H * dpr);
     canvas.style.width = W_ + "px"; canvas.style.height = H + "px";
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    RAD = Math.min(W_, H) * (W_ < 760 ? 0.46 : 0.4);
-    cx = W_ * 0.5; cy = H * 0.46;
+    RAD = Math.min(W_, H) * (W_ < 760 ? 0.72 : 0.82);
+    cx = W_ * 0.5; cy = H * 0.47;
     build();
   }
 
-  function project(t) {
-    const ay = t * 0.00013 + pointerX * 0.5;
+  function projectPoint(x, y, z, t) {
+    const ay = t * 0.000148 + pointerX * 0.5;
     const cosY = Math.cos(ay), sinY = Math.sin(ay), cosT = Math.cos(tiltX), sinT = Math.sin(tiltX);
+    const cosZ = Math.cos(tiltZ), sinZ = Math.sin(tiltZ);
+    const x1 = x * cosY + z * sinY, z1 = -x * sinY + z * cosY, y1 = y;
+    const y2 = y1 * cosT - z1 * sinT, z2 = y1 * sinT + z1 * cosT;
+    const x2 = x1 * cosZ - y2 * sinZ, y3 = x1 * sinZ + y2 * cosZ;
+    const sc = FOCAL / (FOCAL - z2);
+    return { sx: cx + x2 * sc * RAD, sy: cy + y3 * sc * RAD, depth: z2, scale: sc };
+  }
+
+  function project(t) {
     for (const n of nodes) {
-      const x1 = n.x * cosY + n.z * sinY, z1 = -n.x * sinY + n.z * cosY, y1 = n.y;
-      const y2 = y1 * cosT - z1 * sinT, z2 = y1 * sinT + z1 * cosT;
-      const sc = FOCAL / (FOCAL - z2);
-      n.sx = cx + x1 * sc * RAD; n.sy = cy + y2 * sc * RAD; n.depth = z2; n.scale = sc;
+      const p = projectPoint(n.x, n.y, n.z, t);
+      n.sx = p.sx; n.sy = p.sy; n.depth = p.depth; n.scale = p.scale;
     }
   }
 
@@ -208,18 +219,42 @@ const BrainField = (() => {
   }
 
   /* draw */
+  function drawParcels(t) {
+    for (const p of PARCELS) {
+      const q = projectPoint(p.x, p.y, p.z, t);
+      const c = COL[p.net];
+      const fog = 0.25 + 0.55 * clamp((q.depth + 0.7) / 1.4, 0, 1);
+      const r = RAD * q.scale * (0.038 + (p.parcel % 3) * 0.006);
+      const g = ctx.createRadialGradient(q.sx, q.sy, 0, q.sx, q.sy, r);
+      g.addColorStop(0, `rgba(${c[0]},${c[1]},${c[2]},${0.035 * fog})`);
+      g.addColorStop(0.58, `rgba(${c[0]},${c[1]},${c[2]},${0.012 * fog})`);
+      g.addColorStop(1, `rgba(${c[0]},${c[1]},${c[2]},0)`);
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(q.sx, q.sy, r, 0, 6.2832);
+      ctx.fill();
+    }
+  }
+
   function drawEdges() {
     for (const e of edges) {
       const a = nodes[e.i], b = nodes[e.j];
       const act = a.act > b.act ? a.act : b.act;
       const depth = (a.depth + b.depth) * 0.5;
       const fog = 0.35 + 0.65 * clamp((depth + 0.7) / 1.4, 0, 1);
+      const sameNet = a.net === b.net;
+      const sameParcel = sameNet && a.parcel === b.parcel;
       let col, alpha;
       if (act > 0.05) {
         const c = a.act > b.act ? COL[a.net] : COL[b.net];
         col = [mix(GREY[0], c[0], act), mix(GREY[1], c[1], act), mix(GREY[2], c[2], act)];
         alpha = (0.05 + e.w * 0.05) * fog + act * 0.22;
-      } else { col = GREY; alpha = (0.045 + e.w * 0.05) * fog; }
+      } else {
+        const c = sameNet ? COL[a.net] : GREY;
+        const tint = sameNet ? 0.12 : 0;
+        col = [mix(GREY[0], c[0], tint), mix(GREY[1], c[1], tint), mix(GREY[2], c[2], tint)];
+        alpha = (0.026 + e.w * 0.04) * fog * (sameNet ? 1 : 0.42) * (sameParcel ? 1.28 : 1);
+      }
       ctx.strokeStyle = `rgba(${col[0] | 0},${col[1] | 0},${col[2] | 0},${alpha})`;
       ctx.lineWidth = 0.5 + act * 0.7;
       ctx.beginPath(); ctx.moveTo(a.sx, a.sy); ctx.lineTo(b.sx, b.sy); ctx.stroke();
@@ -230,11 +265,19 @@ const BrainField = (() => {
     for (const k of order) {
       const n = nodes[k], a = n.act, c = COL[n.net];
       const fog = 0.35 + 0.65 * clamp((n.depth + 0.7) / 1.4, 0, 1);
-      const col = [mix(GREY[0], c[0], a) | 0, mix(GREY[1], c[1], a) | 0, mix(GREY[2], c[2], a) | 0];
+      const baseTint = 0.075 + (n.parcel % 4) * 0.008;
+      const tint = a > 0.05 ? Math.min(1, baseTint + a) : baseTint;
+      const col = [mix(GREY[0], c[0], tint) | 0, mix(GREY[1], c[1], tint) | 0, mix(GREY[2], c[2], tint) | 0];
       const r = n.size * n.scale * (1 + a * 0.8);
       if (a > 0.05) { ctx.beginPath(); ctx.arc(n.sx, n.sy, r * 4, 0, 6.2832); ctx.fillStyle = `rgba(${col[0]},${col[1]},${col[2]},${a * 0.09 * fog})`; ctx.fill(); }
       ctx.beginPath(); ctx.arc(n.sx, n.sy, r, 0, 6.2832);
-      ctx.fillStyle = `rgba(${col[0]},${col[1]},${col[2]},${(0.22 + a * 0.62) * fog})`; ctx.fill();
+      ctx.fillStyle = `rgba(${col[0]},${col[1]},${col[2]},${(0.18 + a * 0.62) * fog})`; ctx.fill();
+      if (a < 0.05 && n.parcel % 5 === 0) {
+        ctx.beginPath(); ctx.arc(n.sx, n.sy, r * 1.9, 0, 6.2832);
+        ctx.strokeStyle = `rgba(${c[0]},${c[1]},${c[2]},${0.055 * fog})`;
+        ctx.lineWidth = 0.35;
+        ctx.stroke();
+      }
     }
   }
   function drawPulses() {
@@ -266,6 +309,7 @@ const BrainField = (() => {
     const intro = el < 1300 && !reduceMotion ? el / 1300 : 1;
     const dim = clamp(1 - (scrollY / (H * 1.3)) * 0.45, 0.55, 1);
     ctx.globalAlpha = intro * dim;
+    drawParcels(t);
     drawEdges();
     drawNodes();
     drawPulses();
