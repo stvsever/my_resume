@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description"
+    content="Stijn Van Severen - next-generation AI, cyber- and neuropsychology. Agentic systems for political behavior, biopsychosocial health, and cognitive security.">
+  <meta name="theme-color" content="#05070e">
+  <title>Stijn Van Severen | Next-gen AI, Cyber- &amp; Neuropsychology</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="icon"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2305070e'/%3E%3Ccircle cx='32' cy='32' r='7' fill='%233be7ff'/%3E%3Ccircle cx='32' cy='32' r='13' fill='none' stroke='%235b8cff' stroke-width='1.5' opacity='.7'/%3E%3Ccircle cx='52' cy='20' r='2.4' fill='%237cffbf'/%3E%3Ccircle cx='14' cy='44' r='2' fill='%233be7ff'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <canvas id="neural-field" aria-hidden="true"></canvas>
+  <div class="field-veil" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="scroll-progress" aria-hidden="true"><span data-progress></span></div>
+
+  <!-- NAV -->
+  <header class="nav" data-nav>
+    <a class="nav-brand" href="#top" aria-label="Stijn Van Severen, home">
+      <span class="brand-glyph" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="brand-name">Stijn Van Severen</span>
+    </a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="#profile" data-navlink>Profile</a>
+      <a href="#systems" data-navlink>Capabilities</a>
+      <a href="#connect" data-navlink>Connect</a>
+    </nav>
+    <div class="nav-actions">
+      <a class="nav-resume" href="files/Stijn_Van_Severen_Resume.pdf" target="_blank" rel="noreferrer" aria-label="Download resume PDF">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11"/><path d="m7.5 10 4.5 4.5L16.5 10"/><path d="M5 19h14"/></svg>
+        <span>Resume</span>
+      </a>
+      <button class="nav-contact" type="button" data-contact-toggle aria-expanded="false" aria-controls="contact-panel">
+        <span class="ping" aria-hidden="true"></span><span>Contact</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- CONTACT OVERLAY -->
+  <div class="contact-overlay" data-contact-overlay hidden>
+    <div class="contact-card" id="contact-panel" role="dialog" aria-modal="true" aria-labelledby="contact-title" tabindex="-1">
+      <button class="contact-close" type="button" data-contact-close aria-label="Close contact panel">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"/><path d="M18 6 6 18"/></svg>
+      </button>
+      <p class="eyebrow">Direct line</p>
+      <h2 id="contact-title">Let's build something precise.</h2>
+      <p class="contact-sub">Research collaboration, technical work, policy-facing AI, or FeedPilot. Tap a field to copy it.</p>
+      <div class="contact-facts">
+        <button type="button" data-copy="stijn.vanseveren@ugent.be">
+          <span class="cf-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg></span>
+          <span class="cf-text"><small>Email</small><strong>stijn.vanseveren@ugent.be</strong></span>
+          <span class="cf-act" aria-hidden="true">copy</span>
+        </button>
+        <button type="button" data-copy="+32478417513">
+          <span class="cf-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 4h4l2 5-3 2a12 12 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg></span>
+          <span class="cf-text"><small>Phone</small><strong>+32 478 41 75 13</strong></span>
+          <span class="cf-act" aria-hidden="true">copy</span>
+        </button>
+        <a href="https://github.com/stvsever" target="_blank" rel="noreferrer">
+          <span class="cf-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2.5a9.5 9.5 0 0 0-3 18.52c.48.1.66-.2.66-.46v-1.72c-2.68.58-3.24-1.14-3.24-1.14-.44-1.1-1.06-1.4-1.06-1.4-.86-.58.06-.58.06-.58.96.08 1.46.98 1.46.98.84 1.46 2.22 1.04 2.76.8.08-.62.32-1.04.58-1.28-2.14-.24-4.4-1.08-4.4-4.76 0-1.06.38-1.92.98-2.6-.1-.24-.42-1.24.1-2.56 0 0 .8-.26 2.62.98A9 9 0 0 1 12 5.46c.82 0 1.64.1 2.42.32 1.82-1.24 2.62-.98 2.62-.98.52 1.32.2 2.32.1 2.56.62.68.98 1.54.98 2.6 0 3.7-2.26 4.52-4.42 4.76.34.3.66.9.66 1.82v2.7c0 .26.18.56.68.46A9.5 9.5 0 0 0 12 2.5Z"/></svg></span>
+          <span class="cf-text"><small>GitHub</small><strong>github.com/stvsever</strong></span>
+          <span class="cf-act" aria-hidden="true">open</span>
+        </a>
+        <a href="https://www.linkedin.com/in/stijn-van-severen-881785274/" target="_blank" rel="noreferrer">
+          <span class="cf-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4.5 3.5A1.8 1.8 0 1 1 4.49 7.1 1.8 1.8 0 0 1 4.5 3.5ZM3 8.6h3v11.9H3zM9 8.6h2.86v1.63h.04c.4-.76 1.38-1.56 2.84-1.56 3.04 0 3.6 2 3.6 4.6v6.23h-3v-5.52c0-1.32-.02-3.02-1.84-3.02-1.84 0-2.12 1.44-2.12 2.92v5.62H9z"/></svg></span>
+          <span class="cf-text"><small>LinkedIn</small><strong>Stijn Van Severen</strong></span>
+          <span class="cf-act" aria-hidden="true">open</span>
+        </a>
+      </div>
+      <div class="copy-status" data-copy-status aria-live="polite"></div>
+    </div>
+  </div>
+
+  <main id="top">
+
+    <!-- HERO -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-inner">
+        <div class="hero-copy">
+          <p class="hero-eyebrow" data-rise>
+            <span class="dot" aria-hidden="true"></span>NEXT-GEN AI &middot; CYBER- AND NEUROPSYCHOLOGY
+          </p>
+          <h1 id="hero-title" data-rise>Stijn Van Severen</h1>
+          <p class="hero-focus" data-rise aria-label="Focus areas">
+            <span class="focus-static">Building systems for</span>
+            <span class="focus-display">
+              <span class="brk" aria-hidden="true">[</span>
+              <span class="focus-rotator" data-rotator aria-hidden="true">
+                <span class="is-active">political behavior</span>
+                <span>biopsychosocial health</span>
+                <span>cognitive security</span>
+                <span>digital autonomy</span>
+              </span>
+              <span class="brk" aria-hidden="true">]</span>
+            </span>
+          </p>
+          <p class="hero-lede" data-rise>
+            I build agentic AI, reproducible research software, and ontology-driven simulations that turn hidden
+            behavioral structure into something measurable, inspectable, and useful.
+          </p>
+          <div class="hero-actions" data-rise>
+            <button class="btn btn-primary" type="button" data-contact-toggle aria-expanded="false" aria-controls="contact-panel">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg><span>Contact</span>
+            </button>
+            <a class="btn btn-ghost" href="https://github.com/stvsever" target="_blank" rel="noreferrer">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5a9.5 9.5 0 0 0-3 18.52c.48.1.66-.2.66-.46v-1.72c-2.68.58-3.24-1.14-3.24-1.14-.44-1.1-1.06-1.4-1.06-1.4-.86-.58.06-.58.06-.58.96.08 1.46.98 1.46.98.84 1.46 2.22 1.04 2.76.8.08-.62.32-1.04.58-1.28-2.14-.24-4.4-1.08-4.4-4.76 0-1.06.38-1.92.98-2.6-.1-.24-.42-1.24.1-2.56 0 0 .8-.26 2.62.98A9 9 0 0 1 12 5.46c.82 0 1.64.1 2.42.32 1.82-1.24 2.62-.98 2.62-.98.52 1.32.2 2.32.1 2.56.62.68.98 1.54.98 2.6 0 3.7-2.26 4.52-4.42 4.76.34.3.66.9.66 1.82v2.7c0 .26.18.56.68.46A9.5 9.5 0 0 0 12 2.5Z"/></svg><span>GitHub</span>
+            </a>
+            <a class="btn btn-ghost" href="files/Stijn_Van_Severen_Resume.pdf" target="_blank" rel="noreferrer">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11"/><path d="m7.5 10 4.5 4.5L16.5 10"/><path d="M5 19h14"/></svg><span>Resume</span>
+            </a>
+          </div>
+          <dl class="hero-metrics" data-rise aria-label="At a glance">
+            <div><dt>07</dt><dd>experience entries</dd></div>
+            <div><dt>15</dt><dd>open-source systems</dd></div>
+            <div><dt>07</dt><dd>manuscripts</dd></div>
+          </dl>
+        </div>
+
+        <div class="hero-portrait" data-core data-rise aria-hidden="true">
+          <span class="pf-glow"></span>
+          <span class="pf-scan"></span>
+          <img class="pf-img" src="assets/face.png" alt="" loading="eager" decoding="async">
+          <span class="pf-tag pf-tag-1">neural interface</span>
+          <span class="pf-tag pf-tag-2">online</span>
+        </div>
+      </div>
+
+      <a class="scroll-cue" href="#profile" data-rise aria-label="Scroll down">
+        <span class="sc-label">Explore</span>
+        <span class="sc-rail"><span class="sc-dot"></span></span>
+      </a>
+    </section>
+
+    <!-- PROFILE -->
+    <section class="block profile" id="profile">
+      <div class="block-head centered" data-reveal>
+        <span class="idx">01</span>
+        <h2>Profile</h2>
+        <p class="head-sub">Three chronological lenses on the same trajectory. Move between my experience, manuscripts, and education without losing the frame.</p>
+        <div class="matrix-tabs" role="tablist" aria-label="Profile views">
+          <button class="m-tab is-active" role="tab" aria-selected="true" type="button" data-profile="experience"><span>Experience</span><b>07</b></button>
+          <button class="m-tab" role="tab" aria-selected="false" type="button" data-profile="research"><span>Manuscripts</span><b>07</b></button>
+          <button class="m-tab" role="tab" aria-selected="false" type="button" data-profile="education"><span>Education</span><b>04</b></button>
+          <span class="m-indicator" data-indicator aria-hidden="true"></span>
+        </div>
+      </div>
+
+      <div class="matrix-stage" data-reveal>
+
+        <!-- EXPERIENCE -->
+        <div class="m-panel is-active" data-panel="experience" role="tabpanel" aria-label="Professional experience">
+          <ol class="timeline">
+            <li class="t-item is-present">
+              <span class="t-dot"></span><time>Jun 2026 &ndash; Present</time>
+              <div class="t-body"><h3>Founder &amp; CEO, FeedPilot</h3><p class="t-org">FeedPilot, Ghent</p>
+              <p class="t-desc">Founded a browser-based AI agent that reads the social feed already on screen, scores each post against the user's own stated goal, and steers future recommendations back toward personal alignment. A post-recommendation layer that puts the algorithm under the user's control.</p></div>
+            </li>
+            <li class="t-item is-present">
+              <span class="t-dot"></span><time>Dec 2024 &ndash; Present</time>
+              <div class="t-body"><h3>Academic Researcher</h3><p class="t-org">Experimental Clinical &amp; Health Psychology, Ghent University</p>
+              <p class="t-desc">Developing AI-based research software and running quantitative and qualitative analyses across seven chronic-pain and cancer-survivorship projects.</p></div>
+            </li>
+            <li class="t-item">
+              <span class="t-dot"></span><time>Jul 13&ndash;24, 2026</time>
+              <div class="t-body"><h3>NeuroHackademy Summer School</h3><p class="t-org">University of Washington eScience Institute, Seattle</p>
+              <p class="t-desc">Selected for a two-week Summer Institute in Neuroimaging and Data Science, focused on reproducible neuroscience workflows, Python tooling, machine learning, and collaborative GitHub development.</p></div>
+            </li>
+            <li class="t-item">
+              <span class="t-dot"></span><time>May 2026</time>
+              <div class="t-body"><h3>NATO HFM-428 Research Workshop</h3><p class="t-org">Technology Enablers for Cognitive Warfare, Amsterdam</p>
+              <p class="t-desc">Selected for a two-day NATO research workshop on technology enablers for cognitive warfare, contributing ontology-based state-space modelling and LLM-assisted simulation perspectives.</p></div>
+            </li>
+            <li class="t-item">
+              <span class="t-dot"></span><time>Dec 2025 &ndash; Feb 2026</time>
+              <div class="t-body"><h3>Research Software Developer, Agentic GraphRAG Platform</h3><p class="t-org">IIS Biobizkaia, Bilbao</p>
+              <p class="t-desc">Built a private full-stack agentic GraphRAG platform for biomedical knowledge interaction, retrieval-augmented generation, and ontology-based reasoning.</p></div>
+            </li>
+            <li class="t-item">
+              <span class="t-dot"></span><time>Aug 2025 &ndash; Mar 2026</time>
+              <div class="t-body"><h3>Research Intern</h3><p class="t-org">IIS Biobizkaia, Bilbao</p>
+              <p class="t-desc">Designed COMPASS, an open-source multi-agent system for multimodal zero-shot phenotypic prediction across large neuroimaging datasets and HPC workflows.</p></div>
+            </li>
+            <li class="t-item">
+              <span class="t-dot"></span><time>Jul 2017 &ndash; Aug 2024</time>
+              <div class="t-body"><h3>Production &amp; Logistics Operator</h3><p class="t-org">Bosspaints, Waregem</p>
+              <p class="t-desc">Six years of operational work in production, logistics, infrastructure maintenance, process optimization, and cross-departmental coordination.</p></div>
+            </li>
+          </ol>
+        </div>
+
+        <!-- MANUSCRIPTS (radar) -->
+        <div class="m-panel" data-panel="research" role="tabpanel" aria-label="Selected research manuscripts" hidden>
+          <div class="radar-shell">
+            <div class="radar" data-radar aria-hidden="true">
+              <span class="radar-ring r1"></span><span class="radar-ring r2"></span><span class="radar-ring r3"></span>
+              <span class="radar-cross x"></span><span class="radar-cross y"></span>
+              <span class="radar-sweep"></span>
+              <span class="radar-core"><b>07</b><small>manuscripts</small></span>
+              <div class="radar-blips" data-blips></div>
+            </div>
+            <div class="radar-detail" data-detail aria-live="polite"></div>
+          </div>
+          <p class="radar-hint" data-reveal>Rotating scope of open-source manuscripts. Select a blip to inspect the work and its title page.</p>
+        </div>
+
+        <!-- EDUCATION -->
+        <div class="m-panel" data-panel="education" role="tabpanel" aria-label="Education" hidden>
+          <ol class="edu-rail">
+            <li class="edu" style="--c:var(--cyan)">
+              <span class="edu-node"></span>
+              <span class="edu-year">2024 &ndash; 2026</span>
+              <div class="edu-body">
+                <h3>MSc Experimental Psychology <em>Magna in progress</em></h3>
+                <p class="edu-org">Specialization in Neuroscience &middot; Ghent University</p>
+                <p>Thesis on adaptive idiographic modelling with ontology-based agentic AI (the PHOENIX engine).</p>
+              </div>
+            </li>
+            <li class="edu" style="--c:var(--blue)">
+              <span class="edu-node"></span>
+              <span class="edu-year">2024 &ndash; 2025</span>
+              <div class="edu-body">
+                <h3>Biomedical Engineering, Neuro-Engineering</h3>
+                <p class="edu-org">Credit Contract &middot; Ghent University</p>
+                <p>Master-level trajectory across neuroscience, engineering, data science, machine learning, and neurotechnology.</p>
+              </div>
+            </li>
+            <li class="edu" style="--c:var(--violet)">
+              <span class="edu-node"></span>
+              <span class="edu-year">2023 &ndash; 2024</span>
+              <div class="edu-body">
+                <h3>Individualized Trajectory in Engineering</h3>
+                <p class="edu-org">Credit Contract &middot; Ghent University</p>
+                <p>Certificates in human-data research, FELASA Category C equivalent, artificial intelligence, and Python programming.</p>
+              </div>
+            </li>
+            <li class="edu" style="--c:var(--mint)">
+              <span class="edu-node"></span>
+              <span class="edu-year">2021 &ndash; 2024</span>
+              <div class="edu-body">
+                <h3>BSc Psychology <em>Magna Cum Laude</em></h3>
+                <p class="edu-org">Theoretical &amp; Experimental Psychology &middot; Ghent University</p>
+                <p>Foundation in experimental design, statistics, and cognitive science.</p>
+              </div>
+            </li>
+          </ol>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- CAPABILITIES -->
+    <section class="block systems" id="systems">
+      <div class="block-head centered" data-reveal>
+        <span class="idx">02</span>
+        <h2>Capabilities</h2>
+        <p class="head-sub">What I actually build with. Four capabilities, each backed by real open-source engines and the methods behind them.</p>
+        <div class="cap-tabs" role="tablist" aria-label="Capabilities">
+          <button class="cap-tab is-active" role="tab" aria-selected="true" type="button" data-cap="agents"><b>01</b><span>Multi-agent AI</span></button>
+          <button class="cap-tab" role="tab" aria-selected="false" type="button" data-cap="ontology"><b>02</b><span>Ontology &amp; GraphRAG</span></button>
+          <button class="cap-tab" role="tab" aria-selected="false" type="button" data-cap="measurement"><b>03</b><span>Behavioral measurement</span></button>
+          <button class="cap-tab" role="tab" aria-selected="false" type="button" data-cap="compute"><b>04</b><span>Explainable compute</span></button>
+        </div>
+      </div>
+
+      <div class="cap-stage" data-reveal>
+        <article class="cap-panel is-active" data-cap-panel="agents">
+          <p class="cap-lead">Orchestrated LLM agents with explicit critic loops and schema-validated state, never a single prompt.</p>
+          <ul class="sys-list">
+            <li class="sys"><div class="sys-head"><h3>COMPASS Engine</h3><span class="sys-meta">clinical decision support</span></div>
+              <p>A five-agent pipeline (orchestrator, executor, integrator, predictor, critic) plus a communicator that writes evidence-grounded phenotyping reports. Zero-shot, multimodal, HPC-ready.</p>
+              <div class="sys-tags"><span>5-agent orchestration</span><span>OpenRouter / local LLMs</span><span>Pydantic</span><span>Slurm + Apptainer</span></div>
+              <a class="repo-link" href="https://github.com/stvsever/COMPASS-Engine" target="_blank" rel="noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5a9.5 9.5 0 0 0-3 18.52c.48.1.66-.2.66-.46v-1.72c-2.68.58-3.24-1.14-3.24-1.14-.44-1.1-1.06-1.4-1.06-1.4-.86-.58.06-.58.06-.58.96.08 1.46.98 1.46.98.84 1.46 2.22 1.04 2.76.8.08-.62.32-1.04.58-1.28-2.14-.24-4.4-1.08-4.4-4.76 0-1.06.38-1.92.98-2.6-.1-.24-.42-1.24.1-2.56 0 0 .8-.26 2.62.98A9 9 0 0 1 12 5.46c.82 0 1.64.1 2.42.32 1.82-1.24 2.62-.98 2.62-.98.52 1.32.2 2.32.1 2.56.62.68.98 1.54.98 2.6 0 3.7-2.26 4.52-4.42 4.76.34.3.66.9.66 1.82v2.7c0 .26.18.56.68.46A9.5 9.5 0 0 0 12 2.5Z"/></svg><span class="repo-path">github.com/stvsever/<b>COMPASS-Engine</b></span><svg class="repo-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg></a>
+            </li>
+            <li class="sys"><div class="sys-head"><h3>PHOENIX Engine</h3><span class="sys-meta">closed-loop intervention design</span></div>
+              <p>A five-stage actor-critic workflow that turns free-text complaints into operationalized, evidence-based digital interventions, refined across iterative cycles with cross-cycle memory.</p>
+              <div class="sys-tags"><span>Actor-critic loops</span><span>HyDE RAG</span><span>Idiographic-nomothetic fusion</span></div>
+              <a class="repo-link" href="https://github.com/stvsever/ThesisMaster" target="_blank" rel="noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5a9.5 9.5 0 0 0-3 18.52c.48.1.66-.2.66-.46v-1.72c-2.68.58-3.24-1.14-3.24-1.14-.44-1.1-1.06-1.4-1.06-1.4-.86-.58.06-.58.06-.58.96.08 1.46.98 1.46.98.84 1.46 2.22 1.04 2.76.8.08-.62.32-1.04.58-1.28-2.14-.24-4.4-1.08-4.4-4.76 0-1.06.38-1.92.98-2.6-.1-.24-.42-1.24.1-2.56 0 0 .8-.26 2.62.98A9 9 0 0 1 12 5.46c.82 0 1.64.1 2.42.32 1.82-1.24 2.62-.98 2.62-.98.52 1.32.2 2.32.1 2.56.62.68.98 1.54.98 2.6 0 3.7-2.26 4.52-4.42 4.76.34.3.66.9.66 1.82v2.7c0 .26.18.56.68.46A9.5 9.5 0 0 0 12 2.5Z"/></svg><span class="repo-path">github.com/stvsever/<b>ThesisMaster</b></span><svg class="repo-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg></a>
+            </li>
+            <li class="sys"><div class="sys-head"><h3>Human-Simulation Protocol</h3><span class="sys-meta">LLM behavioral simulators</span></div>
+              <p>A data-driven methodology for designing LLM simulators of human behavior, scoring generated data against human reliability ceilings with a standardized silicon-human fidelity score.</p>
+              <div class="sys-tags"><span>Stratified sampling</span><span>SHFS benchmark</span><span>XGBoost + TreeSHAP</span></div>
+              <a class="repo-link" href="https://github.com/stvsever/research_paper_on_protocol_for_human_simulation_design" target="_blank" rel="noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5a9.5 9.5 0 0 0-3 18.52c.48.1.66-.2.66-.46v-1.72c-2.68.58-3.24-1.14-3.24-1.14-.44-1.1-1.06-1.4-1.06-1.4-.86-.58.06-.58.06-.58.96.08 1.46.98 1.46.98.84 1.46 2.22 1.04 2.76.8.08-.62.32-1.04.58-1.28-2.14-.24-4.4-1.08-4.4-4.76 0-1.06.38-1.92.98-2.6-.1-.24-.42-1.24.1-2.56 0 0 .8-.26 2.62.98A9 9 0 0 1 12 5.46c.82 0 1.64.1 2.42.32 1.82-1.24 2.62-.98 2.62-.98.52 1.32.2 2.32.1 2.56.62.68.98 1.54.98 2.6 0 3.7-2.26 4.52-4.42 4.76.34.3.66.9.66 1.82v2.7c0 .26.18.56.68.46A9.5 9.5 0 0 0 12 2.5Z"/></svg><span class="repo-path">github.com/stvsever/<b>research_paper_on_protocol_for_human_simulation_design</b></span><svg class="repo-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg></a>
+            </li>
+          </ul>
+        </article>
+
+        <article class="cap-panel" data-cap-panel="ontology" hidden>
+          <p class="cap-lead">Taxonomies and evidence graphs that ground retrieval and constrain what a model is allowed to conclude.</p>
+          <ul class="sys-list">
+            <li class="sys"><div class="sys-head"><h3>Agentic GraphRAG platform</h3><span class="sys-meta">private &middot; biomedical</span></div>
+              <p>A full-stack platform for biomedical knowledge interaction: retrieval-augmented generation over an evidence graph, with ontology-based reasoning and agentic query planning.</p>
+              <div class="sys-tags"><span>GraphRAG</span><span>Hybrid retrieval</span><span>Evidence graphs</span><span class="tag-private">Private repo</span></div>
+            </li>
+            <li class="sys"><div class="sys-head"><h3>PHOENIX ontologies</h3><span class="sys-meta">five interlocking taxonomies</span></div>
+              <p>CRITERION, PREDICTOR, PERSON, CONTEXT and HAPA ontologies spanning DSM-5-TR, ICD-10 and RDoC, retrieved through a hybrid of dense embeddings, BM25 and fuzzy matching.</p>
+              <div class="sys-tags"><span>DSM-5-TR / ICD-10 / RDoC</span><span>Dense + BM25 + fuzzy</span><span>Ontology constraints</span></div>
+            </li>
+            <li class="sys"><div class="sys-head"><h3>Simulation design ontology</h3><span class="sys-meta">configuration space</span></div>
+              <p>A machine-readable taxonomy of 1,149 design dimensions across 18 groups with 44 hard cross-tree constraints, sampled to configure behavioral simulators systematically instead of ad hoc.</p>
+              <div class="sys-tags"><span>1,149 dimensions</span><span>44 constraints</span><span>Stratified sampling</span></div>
+            </li>
+          </ul>
+        </article>
+
+        <article class="cap-panel" data-cap-panel="measurement" hidden>
+          <p class="cap-lead">Idiographic time-series and network psychometrics on real clinical and ambulatory data.</p>
+          <ul class="sys-list">
+            <li class="sys"><div class="sys-head"><h3>"Walk on" temporal networks</h3><span class="sys-meta">fibromyalgia EMA</span></div>
+              <p>Temporal network analysis of 1,474 EMA assessments fused with wrist-accelerometer ENMO, modelled with multilevel VAR to surface day-to-day drivers of physical activity.</p>
+              <div class="sys-tags"><span>EMA</span><span>ENMO accelerometry</span><span>mlVAR</span></div>
+              <a class="repo-link" href="https://github.com/stvsever/research_paper_on_physical_activity_in_fibromyalgia_patients" target="_blank" rel="noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5a9.5 9.5 0 0 0-3 18.52c.48.1.66-.2.66-.46v-1.72c-2.68.58-3.24-1.14-3.24-1.14-.44-1.1-1.06-1.4-1.06-1.4-.86-.58.06-.58.06-.58.96.08 1.46.98 1.46.98.84 1.46 2.22 1.04 2.76.8.08-.62.32-1.04.58-1.28-2.14-.24-4.4-1.08-4.4-4.76 0-1.06.38-1.92.98-2.6-.1-.24-.42-1.24.1-2.56 0 0 .8-.26 2.62.98A9 9 0 0 1 12 5.46c.82 0 1.64.1 2.42.32 1.82-1.24 2.62-.98 2.62-.98.52 1.32.2 2.32.1 2.56.62.68.98 1.54.98 2.6 0 3.7-2.26 4.52-4.42 4.76.34.3.66.9.66 1.82v2.7c0 .26.18.56.68.46A9.5 9.5 0 0 0 12 2.5Z"/></svg><span class="repo-path">github.com/stvsever/<b>research_paper_on_physical_activity_in_fibromyalgia_patients</b></span><svg class="repo-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg></a>
+            </li>
+            <li class="sys"><div class="sys-head"><h3>Hierarchical Updating Algorithm</h3><span class="sys-meta">PHOENIX core</span></div>
+              <p>Stationarity testing (ADF / KPSS), kernel-smoothed VAR(1) and L1-penalized gVAR with Ledoit-Wolf shrinkage, and adaptive idiographic weighting that scales with time-series readiness.</p>
+              <div class="sys-tags"><span>gVAR</span><span>ADF / KPSS</span><span>Ledoit-Wolf shrinkage</span></div>
+            </li>
+            <li class="sys"><div class="sys-head"><h3>Emotion-conditioned bias grid</h3><span class="sys-meta">cyber-relevant decisions</span></div>
+              <p>Mapping of cognitive-bias vulnerability across 239 emotions and 200 bias dimensions, building a high-resolution surface of when and where reasoning is most exploitable.</p>
+              <div class="sys-tags"><span>239 x 200 grid</span><span>Embeddings</span><span>Mixed models</span></div>
+              <a class="repo-link" href="https://github.com/stvsever/research_paper_on_cognitive_biases_across_emotional_states_cyberrelevant" target="_blank" rel="noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5a9.5 9.5 0 0 0-3 18.52c.48.1.66-.2.66-.46v-1.72c-2.68.58-3.24-1.14-3.24-1.14-.44-1.1-1.06-1.4-1.06-1.4-.86-.58.06-.58.06-.58.96.08 1.46.98 1.46.98.84 1.46 2.22 1.04 2.76.8.08-.62.32-1.04.58-1.28-2.14-.24-4.4-1.08-4.4-4.76 0-1.06.38-1.92.98-2.6-.1-.24-.42-1.24.1-2.56 0 0 .8-.26 2.62.98A9 9 0 0 1 12 5.46c.82 0 1.64.1 2.42.32 1.82-1.24 2.62-.98 2.62-.98.52 1.32.2 2.32.1 2.56.62.68.98 1.54.98 2.6 0 3.7-2.26 4.52-4.42 4.76.34.3.66.9.66 1.82v2.7c0 .26.18.56.68.46A9.5 9.5 0 0 0 12 2.5Z"/></svg><span class="repo-path">github.com/stvsever/<b>research_paper_on_cognitive_biases_across_emotional_states_cyberrelevant</b></span><svg class="repo-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg></a>
+            </li>
+          </ul>
+        </article>
+
+        <article class="cap-panel" data-cap-panel="compute" hidden>
+          <p class="cap-lead">Models you can audit and pipelines that run the same way on a laptop or a cluster.</p>
+          <ul class="sys-list">
+            <li class="sys"><div class="sys-head"><h3>aHFR-TokenSHAP</h3><span class="sys-meta">explainable AI</span></div>
+              <p>An adaptive, hierarchy-aware Shapley method that explains binary LLM decisions over structured prompts, turning opaque token attributions into a readable hierarchy of influence.</p>
+              <div class="sys-tags"><span>Hierarchy-aware Shapley</span><span>Token attribution</span><span>XAI</span></div>
+              <a class="repo-link" href="https://github.com/stvsever/aHFR_TokenSHAP" target="_blank" rel="noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5a9.5 9.5 0 0 0-3 18.52c.48.1.66-.2.66-.46v-1.72c-2.68.58-3.24-1.14-3.24-1.14-.44-1.1-1.06-1.4-1.06-1.4-.86-.58.06-.58.06-.58.96.08 1.46.98 1.46.98.84 1.46 2.22 1.04 2.76.8.08-.62.32-1.04.58-1.28-2.14-.24-4.4-1.08-4.4-4.76 0-1.06.38-1.92.98-2.6-.1-.24-.42-1.24.1-2.56 0 0 .8-.26 2.62.98A9 9 0 0 1 12 5.46c.82 0 1.64.1 2.42.32 1.82-1.24 2.62-.98 2.62-.98.52 1.32.2 2.32.1 2.56.62.68.98 1.54.98 2.6 0 3.7-2.26 4.52-4.42 4.76.34.3.66.9.66 1.82v2.7c0 .26.18.56.68.46A9.5 9.5 0 0 0 12 2.5Z"/></svg><span class="repo-path">github.com/stvsever/<b>aHFR_TokenSHAP</b></span><svg class="repo-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg></a>
+            </li>
+            <li class="sys"><div class="sys-head"><h3>Reproducible research infrastructure</h3><span class="sys-meta">laptop to HPC</span></div>
+              <p>Docker for CPU and UI, Slurm + Apptainer for HPC, CI running smoke, unit and integration tests, and schema-enforced JSON / CSV data contracts so a run is identical anywhere.</p>
+              <div class="sys-tags"><span>Docker</span><span>Slurm + Apptainer</span><span>CI/CD</span><span>Schema contracts</span></div>
+            </li>
+            <li class="sys"><div class="sys-head"><h3>LLM-as-judge evaluation</h3><span class="sys-meta">validation harness</span></div>
+              <p>Double-blind evaluation on a 38-dimension scale with linear mixed-effects models and equivalence testing, validated across thousands of expert-style quality ratings.</p>
+              <div class="sys-tags"><span>Mixed-effects models</span><span>Equivalence testing</span><span>Double-blind design</span></div>
+            </li>
+          </ul>
+        </article>
+      </div>
+
+      <div class="toolbox" data-reveal>
+        <div class="tb-group"><h4>Languages</h4><div class="tb-tags"><span>Python</span><span>R</span><span>MATLAB</span><span>JavaScript</span><span>Shell</span><span>LaTeX</span></div></div>
+        <div class="tb-group"><h4>AI &amp; ML</h4><div class="tb-tags"><span>LLM agents</span><span>GraphRAG</span><span>Ontology engineering</span><span>HyDE RAG</span><span>SHAP / XAI</span><span>XGBoost</span></div></div>
+        <div class="tb-group"><h4>Data &amp; statistics</h4><div class="tb-tags"><span>EMA</span><span>mlVAR / gVAR</span><span>Mixed-effects models</span><span>Network psychometrics</span><span>Embeddings</span></div></div>
+        <div class="tb-group"><h4>Infrastructure</h4><div class="tb-tags"><span>Docker</span><span>Slurm + Apptainer</span><span>Flask</span><span>Pydantic</span><span>CI/CD</span></div></div>
+      </div>
+    </section>
+
+    <!-- CONNECT -->
+    <section class="block connect" id="connect">
+      <div class="connect-panel" data-reveal>
+        <div class="cp-glow" aria-hidden="true"></div>
+        <p class="eyebrow">03 &middot; Open channel</p>
+        <h2>Let's connect.</h2>
+        <p class="connect-lede">I collaborate with researchers, policy teams, and builders working on AI, human behavior, cognitive security, clinical data, and social impact.</p>
+        <div class="connect-actions">
+          <button class="btn btn-primary lg" type="button" data-contact-toggle aria-expanded="false" aria-controls="contact-panel">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg><span>Open contact layer</span>
+          </button>
+          <a class="btn btn-line lg" href="files/Stijn_Van_Severen_Resume.pdf" target="_blank" rel="noreferrer">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11"/><path d="m7.5 10 4.5 4.5L16.5 10"/><path d="M5 19h14"/></svg><span>Download resume</span>
+          </a>
+        </div>
+        <div class="connect-quick">
+          <a href="https://github.com/stvsever" target="_blank" rel="noreferrer">github.com/stvsever</a>
+          <span aria-hidden="true">/</span>
+          <a href="https://www.linkedin.com/in/stijn-van-severen-881785274/" target="_blank" rel="noreferrer">LinkedIn</a>
+          <span aria-hidden="true">/</span>
+          <button type="button" data-copy="stijn.vanseveren@ugent.be" class="quick-copy">stijn.vanseveren@ugent.be</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <span class="ft-brand"><span class="brand-glyph small" aria-hidden="true"><i></i><i></i><i></i></span>Stijn Van Severen</span>
+    <span class="ft-tag">Next-gen AI &middot; Cyber- and Neuropsychology</span>
+    <a class="ft-top" href="#top">Back to top</a>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
