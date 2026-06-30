@@ -1,34 +1,45 @@
 /* =========================================================
-   Stijn Van Severen - interaction + brain-network field
+   Stijn Van Severen - interaction + 3D brain field
    ========================================================= */
 document.documentElement.classList.add("js-enabled");
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /* =========================================================
-   BRAIN FIELD
-   Nodes are assigned to the 7 canonical functional networks
-   (Yeo 2011) and laid out over a bilateral, anatomically
-   plausible map. Edges and signal flow follow a between-
-   network connectivity matrix, so the activity reads as a
-   real connectome instead of random clusters.
+   BRAIN FIELD (3D)
+   A dense, MNI-like brain volume that rotates on its own.
+   Nodes are parcellated into the 7 canonical functional
+   networks (Yeo 2011). At rest the whole brain is grey.
+   Activity originates inside one network (DMN biased at
+   rest): its ROIs light up in the network colour, a 3D
+   wavefront sweeps the network, and the activation disperses
+   to functionally connected networks (per a between-network
+   connectivity matrix), then decays back to grey.
    ========================================================= */
 const BrainField = (() => {
   const canvas = document.getElementById("neural-field");
   if (!canvas) return null;
   const ctx = canvas.getContext("2d");
 
-  // Yeo-7 networks: colour + anatomically plausible blobs in one
-  // hemisphere (x: 0 lateral -> 0.5 midline ; y: 0 anterior -> 1 posterior)
-  const NETS = [
-    { col: [150, 78, 188], blobs: [[0.30, 0.90, 0.11], [0.42, 0.86, 0.08], [0.19, 0.85, 0.08]] }, // 0 Visual
-    { col: [74, 142, 205], blobs: [[0.17, 0.46, 0.08], [0.28, 0.42, 0.07], [0.40, 0.40, 0.06]] },  // 1 Somatomotor
-    { col: [56, 188, 110], blobs: [[0.22, 0.64, 0.07], [0.34, 0.60, 0.06], [0.37, 0.30, 0.05]] },  // 2 Dorsal Attention
-    { col: [202, 96, 232], blobs: [[0.12, 0.52, 0.06], [0.44, 0.36, 0.05]] },                       // 3 Ventral Attention
-    { col: [226, 206, 132], blobs: [[0.13, 0.36, 0.06], [0.40, 0.18, 0.05]] },                      // 4 Limbic
-    { col: [236, 154, 64], blobs: [[0.18, 0.26, 0.06], [0.30, 0.24, 0.05], [0.26, 0.66, 0.06]] },   // 5 Frontoparietal
-    { col: [220, 86, 100], blobs: [[0.44, 0.20, 0.06], [0.44, 0.74, 0.06], [0.30, 0.62, 0.05], [0.10, 0.46, 0.05]] }, // 6 Default
+  const GREY = [148, 160, 184];
+  const COL = [
+    [150, 78, 196], [78, 146, 214], [60, 196, 110], [206, 104, 240],
+    [232, 212, 140], [240, 152, 64], [228, 84, 102],
   ];
-  // between-network functional connectivity weights (symmetric)
+  // network ROI centroids in normalised brain space (x right, y superior, z anterior), right hemisphere
+  const CENT_R = [
+    [[0.16, -0.04, -0.80], [0.34, -0.10, -0.60]],                         // 0 Visual (occipital)
+    [[0.40, 0.46, 0.02], [0.22, 0.55, -0.02]],                            // 1 Somatomotor (central)
+    [[0.34, 0.42, -0.34], [0.30, 0.40, 0.34]],                            // 2 Dorsal Attn (sup parietal + FEF)
+    [[0.50, 0.10, -0.06], [0.12, 0.34, 0.22]],                            // 3 Ventral Attn (insula/TPJ + dACC)
+    [[0.30, -0.46, 0.40], [0.14, -0.42, 0.52]],                           // 4 Limbic (temporal pole/OFC)
+    [[0.48, 0.34, 0.48], [0.46, 0.30, -0.42]],                            // 5 Frontoparietal (dlPFC + IPL)
+    [[0.08, 0.22, 0.66], [0.06, 0.26, -0.54], [0.46, 0.30, -0.48], [0.54, -0.18, 0.0]], // 6 Default
+  ];
+  const CENT = CENT_R.map((list) => {
+    const out = [];
+    for (const c of list) { out.push(c); out.push([-c[0], c[1], c[2]]); }
+    return out;
+  });
   const W = [
     [1.0, .30, .42, .20, .12, .18, .12],
     [.30, 1.0, .38, .36, .15, .20, .14],
@@ -38,59 +49,72 @@ const BrainField = (() => {
     [.18, .20, .48, .50, .20, 1.0, .52],
     [.12, .14, .12, .20, .34, .52, 1.0],
   ];
+  const SPONT = [.11, .09, .12, .16, .10, .16, .26];
 
-  let W_ = 0, H = 0, dpr = 1;
-  let nodes = [], pulses = [], raf = null;
-  let nextEmit = 0, scrollY = 0, startTime = 0;
-  const SPAWN_MS = 1600;
-  const pointer = { x: -9999, y: -9999, active: false };
+  let W_ = 0, H = 0, dpr = 1, RAD = 320, cx = 0, cy = 0;
+  let nodes = [], edges = [], order = [];
+  let pulses = [], sparks = [];
+  let raf = null, scrollY = 0, startTime = 0, nextSpont = 0;
+  const netAct = new Float32Array(7);
+  const netSeed = new Array(7).fill(null);
+  let pending = [];
+  let pointerX = 0, pointerY = 0;
   const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
-  const rnd = () => Math.random();
-  const gauss = () => (rnd() + rnd() + rnd() - 1.5) / 1.5; // approx normal in [-1,1]
+  const mix = (a, b, t) => a + (b - a) * t;
+  const tiltX = -0.34, FOCAL = 2.7;
 
   function nodeCount() {
     const w = window.innerWidth;
-    if (w < 620) return 180;
-    if (w < 980) return 320;
-    if (w < 1400) return 460;
-    return 560;
-  }
-  function maxLinkDist() {
-    const w = window.innerWidth;
-    if (w < 620) return 96;
-    if (w < 1400) return 112;
-    return 122;
+    if (w < 620) return 300;
+    if (w < 980) return 480;
+    if (w < 1400) return 720;
+    return 900;
   }
 
-  function toScreen(nx, ny) {
-    return [ (0.05 + nx * 0.90) * W_, (0.08 + ny * 0.84) * H ];
+  function inBrain(x, y, z) {
+    const rz = 0.62;
+    const taper = z > 0 ? 1 - 0.30 * (z / rz) : 1 + 0.05 * (z / rz);
+    const rx = 0.52 * taper, ry = 0.43 * (z > 0 ? 1 - 0.12 * (z / rz) : 1);
+    if ((x / rx) ** 2 + (y / ry) ** 2 + (z / rz) ** 2 > 1) return false;
+    if (y > 0.12 && Math.abs(x) < 0.035) return false; // longitudinal fissure groove
+    return true;
+  }
+  function assignNet(x, y, z) {
+    let best = Infinity, bn = 6;
+    for (let i = 0; i < 7; i++) for (const c of CENT[i]) {
+      const d = (x - c[0]) ** 2 + (y - c[1]) ** 2 + (z - c[2]) ** 2;
+      if (d < best) { best = d; bn = i; }
+    }
+    return bn;
   }
 
-  function seed() {
+  function build() {
     const count = nodeCount();
-    // budget per network proportional to number of blobs
-    let totalBlobs = 0;
-    NETS.forEach((n) => (totalBlobs += n.blobs.length));
-    nodes = [];
-    let id = 0;
-    for (let ni = 0; ni < NETS.length; ni++) {
-      const net = NETS[ni];
-      const budget = Math.round(count * (net.blobs.length / totalBlobs));
-      for (let k = 0; k < budget; k++) {
-        const blob = net.blobs[(rnd() * net.blobs.length) | 0];
-        let nx = clamp(blob[0] + gauss() * blob[2] * 0.85, 0.02, 0.48);
-        const ny = clamp(blob[1] + gauss() * blob[2] * 0.85, 0.02, 0.98);
-        if (id % 2 === 0) nx = 1 - nx; // mirror to the other hemisphere
-        const [x, y] = toScreen(nx, ny);
-        nodes.push({
-          x, y, ox: x, oy: y, vx: 0, vy: 0,
-          size: 0.7 + rnd() * 1.7, net: ni, col: net.col,
-          phase: rnd() * Math.PI * 2,
-          wx: 0.00022 + rnd() * 0.0004, wy: 0.00018 + rnd() * 0.00035,
-          amp: 0.09 + rnd() * 0.13, signal: rnd() * 0.25,
-          depth: 0.4 + rnd() * 1.1, refractoryUntil: 0,
-        });
-        id++;
+    nodes = []; let guard = 0;
+    while (nodes.length < count && guard < count * 50) {
+      guard++;
+      const x = (Math.random() * 2 - 1) * 0.55, y = (Math.random() * 2 - 1) * 0.46, z = (Math.random() * 2 - 1) * 0.64;
+      if (!inBrain(x, y, z)) continue;
+      nodes.push({ x, y, z, net: assignNet(x, y, z), size: 0.7 + Math.random() * 1.4, act: 0, sx: 0, sy: 0, depth: 0, scale: 1 });
+    }
+    order = nodes.map((_, i) => i);
+    // precompute rigid edges (3D knn within radius, filtered by connectivity)
+    edges = [];
+    const N = nodes.length, rE2 = 0.18 * 0.18, maxDeg = 10, seen = new Set();
+    for (let i = 0; i < N; i++) {
+      const a = nodes[i], cand = [];
+      for (let j = 0; j < N; j++) {
+        if (j === i) continue;
+        const b = nodes[j];
+        if (W[a.net][b.net] < 0.16) continue;
+        const d2 = (a.x - b.x) ** 2 + (a.y - b.y) ** 2 + (a.z - b.z) ** 2;
+        if (d2 < rE2) cand.push([d2, j]);
+      }
+      cand.sort((u, v) => u[0] - v[0]);
+      for (let k = 0; k < Math.min(cand.length, maxDeg); k++) {
+        const j = cand[k][1], key = i < j ? i * N + j : j * N + i;
+        if (seen.has(key)) continue; seen.add(key);
+        edges.push({ i, j, w: W[a.net][nodes[j].net] });
       }
     }
   }
@@ -101,130 +125,134 @@ const BrainField = (() => {
     canvas.width = Math.floor(W_ * dpr); canvas.height = Math.floor(H * dpr);
     canvas.style.width = W_ + "px"; canvas.style.height = H + "px";
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    seed();
+    RAD = Math.min(W_, H) * (W_ < 760 ? 0.46 : 0.4);
+    cx = W_ * 0.5; cy = H * 0.46;
+    build();
   }
 
-  /* spatial grid */
-  let grid = new Map(), cell = 110;
-  function buildGrid() {
-    grid = new Map(); cell = maxLinkDist();
-    for (let i = 0; i < nodes.length; i++) {
-      const n = nodes[i];
-      const key = ((n.x / cell) | 0) + "," + ((n.y / cell) | 0);
-      let b = grid.get(key); if (!b) { b = []; grid.set(key, b); } b.push(i);
+  function project(t) {
+    const ay = t * 0.00013 + pointerX * 0.5;
+    const cosY = Math.cos(ay), sinY = Math.sin(ay), cosT = Math.cos(tiltX), sinT = Math.sin(tiltX);
+    for (const n of nodes) {
+      const x1 = n.x * cosY + n.z * sinY, z1 = -n.x * sinY + n.z * cosY, y1 = n.y;
+      const y2 = y1 * cosT - z1 * sinT, z2 = y1 * sinT + z1 * cosT;
+      const sc = FOCAL / (FOCAL - z2);
+      n.sx = cx + x1 * sc * RAD; n.sy = cy + y2 * sc * RAD; n.depth = z2; n.scale = sc;
     }
-  }
-  function around(x, y, range) {
-    const gx = (x / cell) | 0, gy = (y / cell) | 0, span = Math.ceil(range / cell), out = [];
-    for (let ix = gx - span; ix <= gx + span; ix++) for (let iy = gy - span; iy <= gy + span; iy++) {
-      const b = grid.get(ix + "," + iy); if (b) for (const j of b) out.push(j);
-    }
-    return out;
   }
 
-  /* signal emission follows the connectivity weights */
-  function emit(node, energy, now) {
+  /* activation */
+  function addSparks(x, y, net, amt) {
     if (reduceMotion) return;
-    node.signal = Math.min(1.7, Math.max(node.signal, 1.25));
-    node.refractoryUntil = now + 720;
-    if (energy <= 0 || pulses.length > 80) return;
-    const range = 165, cand = [];
-    for (const j of around(node.x, node.y, range)) {
-      const o = nodes[j]; if (o === node) continue;
-      const dx = o.x - node.x, dy = o.y - node.y, d2 = dx * dx + dy * dy;
-      if (d2 < range * range && d2 > 120) {
-        const w = W[node.net][o.net];
-        if (w < 0.16) continue;
-        cand.push({ o, score: w / (Math.sqrt(d2) + 30), d: Math.sqrt(d2) });
+    const c = COL[net];
+    for (let i = 0; i < amt; i++) { const a = Math.random() * 6.2832, s = 0.5 + Math.random() * 2.2; sparks.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, life: 1, c }); }
+  }
+  function nearestInNet(net, x, y, z) {
+    let best = Infinity, bn = null;
+    for (const n of nodes) if (n.net === net) { const d = (n.x - x) ** 2 + (n.y - y) ** 2 + (n.z - z) ** 2; if (d < best) { best = d; bn = n; } }
+    return bn;
+  }
+  function activate(net, pt, strength, now) {
+    netAct[net] = Math.min(1.5, Math.max(netAct[net], strength));
+    netSeed[net] = { x: pt.x, y: pt.y, z: pt.z, t0: now };
+    addSparks(pt.sx || cx, pt.sy || cy, net, 5 + (strength * 7) | 0);
+    if (!reduceMotion) {
+      let fired = 0;
+      for (const e of edges) {
+        if (fired >= 5) break;
+        const a = nodes[e.i], b = nodes[e.j];
+        if (a.net !== net && b.net !== net) continue;
+        const seedNode = (a.x === pt.x && a.y === pt.y) ? a : (b.x === pt.x && b.y === pt.y) ? b : null;
+        if (!seedNode) continue;
+        pulses.push({ a: e.i, b: e.j, t: 0, v: 0.04 + Math.random() * 0.02, c: COL[net] });
+        fired++;
       }
     }
-    cand.sort((a, b) => b.score - a.score);
-    const fan = Math.min(cand.length, 2 + ((rnd() * 2) | 0));
-    for (let i = 0; i < fan; i++) {
-      pulses.push({ a: node, b: cand[i].o, t: 0, v: 1.8 / Math.max(cand[i].d, 28), energy: energy - 1, col: node.col, w: W[node.net][cand[i].o.net] });
+    if (strength < 0.2) return;
+    for (let j = 0; j < 7; j++) {
+      if (j === net) continue;
+      const w = W[net][j]; if (w < 0.3) continue;
+      const tn = nearestInNet(j, pt.x, pt.y, pt.z); if (!tn) continue;
+      pending.push({ net: j, pt: tn, strength: strength * w * 0.82, fireAt: now + 200 + (1 - w) * 440 + Math.random() * 140 });
     }
   }
-  function scheduleEmit(now) {
+  function processPending(now) {
+    for (let i = pending.length - 1; i >= 0; i--) if (now >= pending[i].fireAt) { const e = pending[i]; pending.splice(i, 1); activate(e.net, e.pt, e.strength, now); }
+  }
+  function spontaneous(now) {
     if (reduceMotion || !nodes.length) return;
-    if (!nextEmit) { nextEmit = now + 800 + rnd() * 1300; return; }
-    if (now < nextEmit) return;
-    emit(nodes[(rnd() * nodes.length) | 0], 1 + (rnd() < 0.45 ? 1 : 0), now);
-    nextEmit = now + 1400 + rnd() * 2200;
+    if (!nextSpont) { nextSpont = now + 450; return; }
+    if (now < nextSpont) return;
+    let tot = 0; for (const v of SPONT) tot += v;
+    let r = Math.random() * tot, s = 0, net = 6;
+    for (let i = 0; i < 7; i++) { s += SPONT[i]; if (r <= s) { net = i; break; } }
+    let pick = null, cnt = 0;
+    for (const n of nodes) if (n.net === net && Math.random() < 1 / (++cnt)) pick = n;
+    if (pick) activate(net, pick, 1.0, now);
+    nextSpont = now + 460 + Math.random() * 760;
   }
-
-  function updateNode(n, t) {
-    const osc = Math.sin(t * n.wx + n.phase) * n.amp + Math.cos(t * n.wy + n.phase * 1.6) * n.amp * 0.6;
-    n.signal += ((0.15 + Math.abs(osc)) - n.signal) * 0.04;
-    n.signal *= 0.99; if (n.signal > 1.7) n.signal = 1.7;
-    const dx = Math.cos(t * n.wx + n.phase) * 0.16, dy = Math.sin(t * n.wy + n.phase) * 0.16;
-    const parY = scrollY * 0.015 * n.depth;
-    n.vx += (n.ox - n.x) * 0.0013 + dx * 0.01;
-    n.vy += (n.oy + parY - n.y) * 0.0013 + dy * 0.01;
-    if (pointer.active) {
-      const ax = n.x - pointer.x, ay = n.y - pointer.y, d2 = ax * ax + ay * ay;
-      if (d2 < 22000) { const d = Math.sqrt(d2) || 1, f = (1 - d / 148) * 0.55; n.vx += (ax / d) * f; n.vy += (ay / d) * f; }
-    }
-    n.vx *= 0.9; n.vy *= 0.9; n.x += n.vx; n.y += n.vy;
-  }
-
-  function drawLinks(maxDist) {
-    const md2 = maxDist * maxDist;
-    for (let i = 0; i < nodes.length; i++) {
-      const a = nodes[i];
-      const gx = (a.x / cell) | 0, gy = (a.y / cell) | 0;
-      for (let ix = gx - 1; ix <= gx + 1; ix++) for (let iy = gy - 1; iy <= gy + 1; iy++) {
-        const b = grid.get(ix + "," + iy); if (!b) continue;
-        for (const j of b) {
-          if (j <= i) continue;
-          const o = nodes[j], ax = a.x - o.x, ay = a.y - o.y, d2 = ax * ax + ay * ay;
-          if (d2 > md2) continue;
-          const w = W[a.net][o.net];
-          if (w < 0.16) continue;
-          const d = Math.sqrt(d2);
-          const k = 0.011 * (1 - d / maxDist) * w;
-          const flow = (o.signal - a.signal) * k; a.signal += flow; o.signal -= flow;
-          const s = Math.min(1.2, (a.signal + o.signal) * 0.5);
-          const alpha = (1 - d / maxDist) * (0.04 + w * 0.11 + s * 0.08);
-          let c;
-          if (a.net === o.net) c = a.col;
-          else c = [(a.col[0] + o.col[0]) / 2, (a.col[1] + o.col[1]) / 2, (a.col[2] + o.col[2]) / 2];
-          ctx.strokeStyle = `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${alpha})`;
-          ctx.lineWidth = 0.5 + w * 0.6;
-          ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(o.x, o.y); ctx.stroke();
-        }
+  function updateActivation(t) {
+    for (let i = 0; i < 7; i++) netAct[i] *= 0.985;
+    for (const n of nodes) {
+      const seed = netSeed[n.net];
+      let target = 0;
+      if (seed) {
+        const dist = Math.sqrt((n.x - seed.x) ** 2 + (n.y - seed.y) ** 2 + (n.z - seed.z) ** 2);
+        const wf = (t - seed.t0) * 0.0013;
+        const gate = dist <= wf ? 1 : Math.exp(-((dist - wf) ** 2) / (2 * 0.16 * 0.16));
+        target = netAct[n.net] * gate;
       }
+      n.act += (target - n.act) * 0.16; n.act *= 0.985;
+      if (n.act > 1.5) n.act = 1.5; else if (n.act < 0) n.act = 0;
     }
   }
 
-  function drawPulses(now) {
+  /* draw */
+  function drawEdges() {
+    for (const e of edges) {
+      const a = nodes[e.i], b = nodes[e.j];
+      const act = a.act > b.act ? a.act : b.act;
+      const depth = (a.depth + b.depth) * 0.5;
+      const fog = 0.35 + 0.65 * clamp((depth + 0.7) / 1.4, 0, 1);
+      let col, alpha;
+      if (act > 0.05) {
+        const c = a.act > b.act ? COL[a.net] : COL[b.net];
+        col = [mix(GREY[0], c[0], act), mix(GREY[1], c[1], act), mix(GREY[2], c[2], act)];
+        alpha = (0.05 + e.w * 0.05) * fog + act * 0.22;
+      } else { col = GREY; alpha = (0.045 + e.w * 0.05) * fog; }
+      ctx.strokeStyle = `rgba(${col[0] | 0},${col[1] | 0},${col[2] | 0},${alpha})`;
+      ctx.lineWidth = 0.5 + act * 0.7;
+      ctx.beginPath(); ctx.moveTo(a.sx, a.sy); ctx.lineTo(b.sx, b.sy); ctx.stroke();
+    }
+  }
+  function drawNodes() {
+    order.sort((u, v) => nodes[u].depth - nodes[v].depth);
+    for (const k of order) {
+      const n = nodes[k], a = n.act, c = COL[n.net];
+      const fog = 0.35 + 0.65 * clamp((n.depth + 0.7) / 1.4, 0, 1);
+      const col = [mix(GREY[0], c[0], a) | 0, mix(GREY[1], c[1], a) | 0, mix(GREY[2], c[2], a) | 0];
+      const r = n.size * n.scale * (1 + a * 0.8);
+      if (a > 0.05) { ctx.beginPath(); ctx.arc(n.sx, n.sy, r * 4, 0, 6.2832); ctx.fillStyle = `rgba(${col[0]},${col[1]},${col[2]},${a * 0.09 * fog})`; ctx.fill(); }
+      ctx.beginPath(); ctx.arc(n.sx, n.sy, r, 0, 6.2832);
+      ctx.fillStyle = `rgba(${col[0]},${col[1]},${col[2]},${(0.22 + a * 0.62) * fog})`; ctx.fill();
+    }
+  }
+  function drawPulses() {
     pulses = pulses.filter((p) => p.t < 1);
     for (const p of pulses) {
       p.t += p.v;
-      const x = p.a.x + (p.b.x - p.a.x) * p.t, y = p.a.y + (p.b.y - p.a.y) * p.t, c = p.col;
-      ctx.beginPath(); ctx.arc(x, y, 2.2, 0, 6.2832); ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},0.92)`; ctx.fill();
-      ctx.beginPath(); ctx.arc(x, y, 6.5, 0, 6.2832); ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},0.1)`; ctx.fill();
-      if (p.t >= 1) {
-        p.b.signal = Math.min(1.7, p.b.signal + 0.4);
-        if (p.energy > 0 && now > p.b.refractoryUntil && rnd() < clamp(p.w * 0.6, 0.1, 0.6)) emit(p.b, p.energy, now);
-      }
+      const a = nodes[p.a], b = nodes[p.b], c = p.c;
+      const x = a.sx + (b.sx - a.sx) * p.t, y = a.sy + (b.sy - a.sy) * p.t;
+      ctx.beginPath(); ctx.arc(x, y, 2, 0, 6.2832); ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},0.95)`; ctx.fill();
+      ctx.beginPath(); ctx.arc(x, y, 6, 0, 6.2832); ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},0.12)`; ctx.fill();
     }
   }
-
-  function drawNodes() {
-    for (const n of nodes) {
-      const r = n.size * (1 + n.signal * 0.5), c = n.col;
-      ctx.beginPath(); ctx.arc(n.x, n.y, r * 3.8, 0, 6.2832); ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${0.022 + n.signal * 0.04})`; ctx.fill();
-      ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, 6.2832); ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${0.42 + n.signal * 0.34})`; ctx.fill();
-    }
-  }
-
-  function drawPointer() {
-    if (!pointer.active) return;
-    for (const j of around(pointer.x, pointer.y, 150)) {
-      const n = nodes[j], dx = n.x - pointer.x, dy = n.y - pointer.y, d = Math.sqrt(dx * dx + dy * dy);
-      if (d > 150) continue;
-      ctx.beginPath(); ctx.moveTo(pointer.x, pointer.y); ctx.lineTo(n.x, n.y);
-      ctx.strokeStyle = `rgba(124,255,191,${(1 - d / 150) * 0.4})`; ctx.lineWidth = 0.8; ctx.stroke();
+  function drawSparks() {
+    sparks = sparks.filter((s) => s.life > 0.04);
+    for (const s of sparks) {
+      s.x += s.vx; s.y += s.vy; s.vx *= 0.92; s.vy *= 0.92; s.life *= 0.9;
+      ctx.beginPath(); ctx.arc(s.x, s.y, 1.8 * s.life, 0, 6.2832);
+      ctx.fillStyle = `rgba(${s.c[0]},${s.c[1]},${s.c[2]},${s.life})`; ctx.fill();
     }
   }
 
@@ -232,38 +260,35 @@ const BrainField = (() => {
     if (!startTime) startTime = t;
     const el = t - startTime;
     ctx.clearRect(0, 0, W_, H);
-    buildGrid();
-    if (el < SPAWN_MS && !reduceMotion) {
-      // settle from a contracted-but-distributed layout (keeps the grid sparse)
-      const e = 1 - Math.pow(1 - el / SPAWN_MS, 3), cx = W_ * 0.5, cy = H * 0.46, k = 0.5 + 0.5 * e;
-      for (const n of nodes) { n.x = cx + (n.ox - cx) * k; n.y = cy + (n.oy - cy) * k; n.signal = 0.18 + e * 0.32; }
-    } else {
-      scheduleEmit(t);
-      for (const n of nodes) updateNode(n, t);
-    }
-    drawLinks(maxLinkDist());
-    drawPulses(t);
+    project(t);
+    if (!reduceMotion) { spontaneous(t); processPending(t); }
+    updateActivation(t);
+    const intro = el < 1300 && !reduceMotion ? el / 1300 : 1;
+    const dim = clamp(1 - (scrollY / (H * 1.3)) * 0.45, 0.55, 1);
+    ctx.globalAlpha = intro * dim;
+    drawEdges();
     drawNodes();
-    drawPointer();
+    drawPulses();
+    drawSparks();
+    ctx.globalAlpha = 1;
     if (!reduceMotion) raf = requestAnimationFrame(frame);
   }
 
-  function nearestEmit(x, y, energy) {
-    let best = Infinity, idx = -1;
-    for (const j of around(x, y, 220)) { const n = nodes[j], d = (n.x - x) ** 2 + (n.y - y) ** 2; if (d < best) { best = d; idx = j; } }
-    if (idx >= 0) emit(nodes[idx], energy, performance.now());
+  function igniteAt(x, y) {
+    let best = Infinity, bn = null;
+    for (const n of nodes) { const d = (n.sx - x) ** 2 + (n.sy - y) ** 2; if (d < best) { best = d; bn = n; } }
+    if (bn) activate(bn.net, bn, 1.1, performance.now());
   }
 
   function start() {
     resize();
     window.addEventListener("resize", () => { if (raf) cancelAnimationFrame(raf); startTime = 0; resize(); if (reduceMotion) frame(0); else raf = requestAnimationFrame(frame); });
-    window.addEventListener("pointermove", (e) => { pointer.x = e.clientX; pointer.y = e.clientY; pointer.active = true; }, { passive: true });
-    window.addEventListener("pointerleave", () => { pointer.active = false; });
-    window.addEventListener("pointerdown", (e) => { buildGrid(); nearestEmit(e.clientX, e.clientY, 2); }, { passive: true });
+    window.addEventListener("pointermove", (e) => { pointerX = (e.clientX / window.innerWidth - 0.5) * 0.6; pointerY = e.clientY / window.innerHeight - 0.5; }, { passive: true });
+    window.addEventListener("pointerdown", (e) => igniteAt(e.clientX, e.clientY), { passive: true });
     window.addEventListener("scroll", () => { scrollY = window.scrollY; }, { passive: true });
     if (reduceMotion) frame(0); else raf = requestAnimationFrame(frame);
   }
-  return { start, ignite: (x, y) => { buildGrid(); nearestEmit(x, y, 2); } };
+  return { start, ignite: (x, y) => igniteAt(x, y) };
 })();
 
 /* =========================================================
@@ -288,18 +313,23 @@ function setupHeroCore() {
 }
 
 /* =========================================================
-   FOCUS ROTATOR
+   FOCUS ROTATOR (brackets hug the active word)
    ========================================================= */
 function setupRotator() {
   const rot = document.querySelector("[data-rotator]");
   if (!rot) return;
   const items = [...rot.children];
-  if (items.length < 2) return;
+  if (!items.length) return;
   let i = 0;
+  const fit = () => { rot.style.width = (items[i].offsetWidth + 4) + "px"; };
+  requestAnimationFrame(fit); setTimeout(fit, 400);
+  window.addEventListener("resize", fit);
+  if (items.length < 2 || reduceMotion) return;
   setInterval(() => {
     items[i].classList.remove("is-active"); items[i].classList.add("is-out");
     const prev = i; i = (i + 1) % items.length;
     items[i].classList.remove("is-out"); items[i].classList.add("is-active");
+    fit();
     setTimeout(() => items[prev].classList.remove("is-out"), 500);
   }, 2600);
 }
@@ -405,16 +435,13 @@ function setupRadar() {
   const blipsWrap = document.querySelector("[data-blips]");
   const detail = document.querySelector("[data-detail]");
   if (!radar || !blipsWrap || !detail) return;
-
   const N = PAPERS.length, R = 47;
   const blips = PAPERS.map((p, i) => {
-    const ang = -90 + i * (360 / N);
-    const rad = (ang * Math.PI) / 180;
+    const ang = -90 + i * (360 / N), rad = (ang * Math.PI) / 180;
     const x = 50 + R * Math.cos(rad), y = 50 + R * Math.sin(rad);
     const btn = document.createElement("button");
     btn.className = "blip" + (x < 49 ? " left" : "");
-    btn.type = "button";
-    btn.style.left = x + "%"; btn.style.top = y + "%";
+    btn.type = "button"; btn.style.left = x + "%"; btn.style.top = y + "%";
     btn.style.setProperty("--bc", CAT_COLOR[p.cat]);
     btn.style.setProperty("--pd", (-(((ang + 90) % 360) / 360) * 8).toFixed(2) + "s");
     btn.setAttribute("aria-label", p.title);
@@ -423,9 +450,7 @@ function setupRadar() {
     blipsWrap.appendChild(btn);
     return btn;
   });
-
-  function repoLabel(url) { return url.replace("https://github.com/stvsever/", ""); }
-
+  const repoLabel = (url) => url.replace("https://github.com/stvsever/", "");
   function select(i) {
     const p = PAPERS[i];
     blips.forEach((b, k) => b.classList.toggle("is-active", k === i));
@@ -488,7 +513,7 @@ function setupContact() {
     if (status && !overlay.hidden) status.textContent = ok ? `Copied ${val}` : val;
     const act = btn.querySelector(".cf-act");
     if (act) { act.textContent = "copied"; setTimeout(() => (act.textContent = btn.tagName === "A" ? "open" : "copy"), 1400); }
-    if (btn.classList.contains("quick-copy")) { const t0 = btn.textContent; btn.textContent = "copied to clipboard"; setTimeout(() => (btn.textContent = t0), 1400); }
+    if (btn.classList.contains("quick-copy")) { const lbl = btn.querySelector(".cq-label"); if (lbl) { const t0 = lbl.textContent; lbl.textContent = "copied to clipboard"; setTimeout(() => (lbl.textContent = t0), 1400); } }
   }));
 }
 
