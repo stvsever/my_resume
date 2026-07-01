@@ -20,29 +20,117 @@ const BrainField = (() => {
   if (!canvas) return null;
   const ctx = canvas.getContext("2d");
 
-  const GREY = [154, 164, 184];
+  const GREY = [164, 170, 184];
   const COL = [
     [150, 78, 196], [78, 146, 214], [60, 196, 110], [206, 104, 240],
     [232, 212, 140], [240, 152, 64], [228, 84, 102],
   ];
-  // Approximate right-hemisphere parcel anchors in normalised brain space
-  // (x right, y superior, z anterior), mirrored to the left hemisphere below.
-  const PARCELS_R = [
-    [[0.12, -0.02, -0.84], [0.32, -0.10, -0.67], [0.18, 0.18, -0.74]], // 0 Visual
-    [[0.28, 0.55, -0.04], [0.42, 0.42, 0.10], [0.50, 0.02, -0.18]],   // 1 Somatomotor
-    [[0.34, 0.43, -0.36], [0.40, 0.34, 0.38], [0.16, 0.48, -0.16]],   // 2 Dorsal attention
-    [[0.50, 0.10, -0.06], [0.18, 0.34, 0.24], [0.44, 0.04, 0.32]],    // 3 Ventral attention / salience
-    [[0.30, -0.46, 0.40], [0.14, -0.42, 0.52], [0.44, -0.22, 0.16]],  // 4 Limbic
-    [[0.48, 0.34, 0.48], [0.46, 0.30, -0.42], [0.22, 0.22, 0.46], [0.30, 0.46, -0.16]], // 5 Frontoparietal
-    [[0.08, 0.22, 0.66], [0.06, 0.26, -0.54], [0.46, 0.30, -0.48], [0.54, -0.18, 0.0], [0.20, -0.32, 0.28], [0.04, -0.08, 0.18]], // 6 Default
+  // Schaefer2018 100-parcel atlas, 7-network order, FSLMNI152 2mm centroid RAS coordinates.
+  // Source: Thomas Yeo Lab / CBIG. RAS is normalised to renderer space: x right, y superior, z anterior.
+  // Network ids: 0 Visual, 1 Somatomotor, 2 Dorsal attention, 3 Ventral attention / salience,
+  // 4 Limbic, 5 Frontoparietal control, 6 Default mode.
+  const PARCELS = [
+    { net: 0, parcel: 0, x: -0.2080, y: -0.1200, z: -0.2720 },
+    { net: 0, parcel: 1, x: -0.2080, y: -0.0933, z: -0.6080 },
+    { net: 0, parcel: 2, x: -0.1440, y: -0.0400, z: -0.4800 },
+    { net: 0, parcel: 3, x: -0.2080, y: -0.0267, z: -0.7680 },
+    { net: 0, parcel: 4, x: -0.0480, y: -0.0133, z: -0.7360 },
+    { net: 0, parcel: 5, x: -0.0960, y: 0.0400, z: -0.5280 },
+    { net: 0, parcel: 6, x: -0.3840, y: 0.0667, z: -0.5600 },
+    { net: 0, parcel: 7, x: -0.2080, y: 0.1333, z: -0.7040 },
+    { net: 0, parcel: 8, x: -0.0480, y: 0.1733, z: -0.6560 },
+    { net: 1, parcel: 9, x: -0.4320, y: 0.0533, z: -0.1760 },
+    { net: 1, parcel: 10, x: -0.2880, y: 0.1067, z: -0.1760 },
+    { net: 1, parcel: 11, x: -0.4320, y: 0.0933, z: -0.0960 },
+    { net: 1, parcel: 12, x: -0.4320, y: 0.2267, z: -0.0640 },
+    { net: 1, parcel: 13, x: -0.3200, y: 0.3867, z: -0.1760 },
+    { net: 1, parcel: 14, x: -0.0480, y: 0.4667, z: -0.2240 },
+    { net: 2, parcel: 15, x: -0.3680, y: -0.0800, z: -0.4640 },
+    { net: 2, parcel: 16, x: -0.4640, y: 0.2533, z: -0.1920 },
+    { net: 2, parcel: 17, x: -0.1920, y: 0.3333, z: -0.5440 },
+    { net: 2, parcel: 18, x: -0.3360, y: 0.3200, z: -0.2720 },
+    { net: 2, parcel: 19, x: -0.0480, y: 0.3733, z: -0.4800 },
+    { net: 2, parcel: 20, x: -0.1760, y: 0.4400, z: -0.4000 },
+    { net: 2, parcel: 21, x: -0.3840, y: 0.1867, z: 0.0480 },
+    { net: 2, parcel: 22, x: -0.2080, y: 0.4000, z: -0.0320 },
+    { net: 3, parcel: 23, x: -0.4640, y: 0.2000, z: -0.3040 },
+    { net: 3, parcel: 24, x: -0.3360, y: -0.0400, z: -0.0160 },
+    { net: 3, parcel: 25, x: -0.3040, y: 0.0400, z: 0.0960 },
+    { net: 3, parcel: 26, x: -0.2400, y: 0.2000, z: 0.3520 },
+    { net: 3, parcel: 27, x: -0.0480, y: 0.2267, z: 0.1600 },
+    { net: 3, parcel: 28, x: -0.0960, y: 0.3067, z: -0.2720 },
+    { net: 3, parcel: 29, x: -0.0480, y: 0.4133, z: 0.0320 },
+    { net: 4, parcel: 30, x: -0.1120, y: -0.1333, z: 0.2560 },
+    { net: 4, parcel: 31, x: -0.2560, y: -0.2533, z: 0.0160 },
+    { net: 4, parcel: 32, x: -0.4640, y: -0.1467, z: -0.2560 },
+    { net: 5, parcel: 33, x: -0.3040, y: 0.3067, z: -0.4160 },
+    { net: 5, parcel: 34, x: -0.3520, y: 0.1333, z: 0.2560 },
+    { net: 5, parcel: 35, x: -0.0800, y: 0.2533, z: -0.5920 },
+    { net: 5, parcel: 36, x: -0.0320, y: 0.2267, z: -0.2080 },
+    { net: 6, parcel: 37, x: -0.4480, y: -0.1333, z: -0.0320 },
+    { net: 6, parcel: 38, x: -0.4640, y: -0.0133, z: -0.2560 },
+    { net: 6, parcel: 39, x: -0.4640, y: 0.0800, z: -0.4000 },
+    { net: 6, parcel: 40, x: -0.3840, y: 0.2400, z: -0.5120 },
+    { net: 6, parcel: 41, x: -0.2720, y: -0.0667, z: 0.1760 },
+    { net: 6, parcel: 42, x: -0.3680, y: -0.0267, z: 0.2720 },
+    { net: 6, parcel: 43, x: -0.0480, y: 0.0000, z: 0.3680 },
+    { net: 6, parcel: 44, x: -0.1920, y: -0.0133, z: 0.4800 },
+    { net: 6, parcel: 45, x: -0.0640, y: 0.2800, z: 0.3840 },
+    { net: 6, parcel: 46, x: -0.3200, y: 0.3200, z: 0.1120 },
+    { net: 6, parcel: 47, x: -0.2080, y: 0.3467, z: 0.1600 },
+    { net: 6, parcel: 48, x: -0.0960, y: 0.0800, z: -0.4480 },
+    { net: 6, parcel: 49, x: -0.0480, y: 0.2267, z: -0.4160 },
+    { net: 0, parcel: 50, x: 0.2560, y: -0.1467, z: -0.2560 },
+    { net: 0, parcel: 51, x: 0.2240, y: -0.0800, z: -0.5280 },
+    { net: 0, parcel: 52, x: 0.4000, y: -0.0667, z: -0.4800 },
+    { net: 0, parcel: 53, x: 0.1760, y: -0.0267, z: -0.7680 },
+    { net: 0, parcel: 54, x: 0.0640, y: 0.0400, z: -0.6080 },
+    { net: 0, parcel: 55, x: 0.1440, y: 0.0400, z: -0.4640 },
+    { net: 0, parcel: 56, x: 0.2880, y: 0.1067, z: -0.6560 },
+    { net: 0, parcel: 57, x: 0.0960, y: 0.2000, z: -0.6880 },
+    { net: 1, parcel: 58, x: 0.4160, y: 0.0400, z: -0.1280 },
+    { net: 1, parcel: 59, x: 0.3200, y: 0.1067, z: -0.1280 },
+    { net: 1, parcel: 60, x: 0.4480, y: 0.0800, z: -0.0320 },
+    { net: 1, parcel: 61, x: 0.4640, y: 0.2000, z: -0.0480 },
+    { net: 1, parcel: 62, x: 0.3680, y: 0.3200, z: -0.0960 },
+    { net: 1, parcel: 63, x: 0.3200, y: 0.4000, z: -0.1760 },
+    { net: 1, parcel: 64, x: 0.2400, y: 0.4267, z: -0.3040 },
+    { net: 1, parcel: 65, x: 0.0480, y: 0.4667, z: -0.2240 },
+    { net: 2, parcel: 66, x: 0.4000, y: 0.1067, z: -0.4960 },
+    { net: 2, parcel: 67, x: 0.4000, y: 0.2800, z: -0.1920 },
+    { net: 2, parcel: 68, x: 0.3040, y: 0.3333, z: -0.3680 },
+    { net: 2, parcel: 69, x: 0.2080, y: 0.3467, z: -0.5280 },
+    { net: 2, parcel: 70, x: 0.1120, y: 0.4400, z: -0.4160 },
+    { net: 2, parcel: 71, x: 0.3840, y: 0.1733, z: 0.0800 },
+    { net: 2, parcel: 72, x: 0.2240, y: 0.4000, z: -0.0160 },
+    { net: 3, parcel: 73, x: 0.4640, y: 0.0800, z: -0.3360 },
+    { net: 3, parcel: 74, x: 0.4800, y: 0.1867, z: -0.2080 },
+    { net: 3, parcel: 75, x: 0.3200, y: 0.0133, z: 0.0640 },
+    { net: 3, parcel: 76, x: 0.0960, y: 0.3067, z: -0.2560 },
+    { net: 3, parcel: 77, x: 0.0640, y: 0.3467, z: 0.0480 },
+    { net: 4, parcel: 78, x: 0.0960, y: -0.1333, z: 0.2720 },
+    { net: 4, parcel: 79, x: 0.3040, y: -0.2533, z: 0.0000 },
+    { net: 5, parcel: 80, x: 0.4640, y: 0.2933, z: -0.3040 },
+    { net: 5, parcel: 81, x: 0.3680, y: 0.3067, z: -0.4960 },
+    { net: 5, parcel: 82, x: 0.2400, y: -0.0133, z: 0.4640 },
+    { net: 5, parcel: 83, x: 0.3680, y: 0.1067, z: 0.3040 },
+    { net: 5, parcel: 84, x: 0.2560, y: 0.2000, z: 0.3680 },
+    { net: 5, parcel: 85, x: 0.3520, y: 0.2933, z: 0.1280 },
+    { net: 5, parcel: 86, x: 0.0480, y: 0.2267, z: -0.2240 },
+    { net: 5, parcel: 87, x: 0.0480, y: 0.2000, z: 0.2240 },
+    { net: 5, parcel: 88, x: 0.0800, y: 0.2800, z: -0.5280 },
+    { net: 6, parcel: 89, x: 0.4320, y: 0.2000, z: -0.4000 },
+    { net: 6, parcel: 90, x: 0.4960, y: -0.1200, z: -0.1920 },
+    { net: 6, parcel: 91, x: 0.4000, y: -0.1200, z: 0.0480 },
+    { net: 6, parcel: 92, x: 0.4640, y: -0.0133, z: -0.2080 },
+    { net: 6, parcel: 93, x: 0.2880, y: -0.1067, z: 0.2080 },
+    { net: 6, parcel: 94, x: 0.4000, y: 0.0000, z: 0.2240 },
+    { net: 6, parcel: 95, x: 0.0480, y: 0.0000, z: 0.3840 },
+    { net: 6, parcel: 96, x: 0.0960, y: 0.2667, z: 0.4000 },
+    { net: 6, parcel: 97, x: 0.2080, y: 0.3333, z: 0.1920 },
+    { net: 6, parcel: 98, x: 0.0960, y: 0.0933, z: -0.4320 },
+    { net: 6, parcel: 99, x: 0.0480, y: 0.2000, z: -0.4160 },
   ];
-  const PARCELS = [];
-  PARCELS_R.forEach((list, net) => {
-    list.forEach((c, idx) => {
-      PARCELS.push({ x: c[0], y: c[1], z: c[2], net, parcel: idx * 2 });
-      PARCELS.push({ x: -c[0], y: c[1], z: c[2], net, parcel: idx * 2 + 1 });
-    });
-  });
   const W = [
     [1.0, .30, .42, .20, .12, .18, .12],
     [.30, 1.0, .38, .36, .15, .20, .14],
@@ -54,33 +142,32 @@ const BrainField = (() => {
   ];
   const SPONT = [.08, .07, .11, .16, .08, .22, .36];
   const NET_GAIN = [.84, .78, .95, 1.04, .86, 1.22, 1.45];
-  const NET_SPREAD = [.13, .12, .16, .16, .14, .20, .24];
-  const REST_BIAS = [.0025, .002, .0035, .005, .003, .010, .016];
+  const NET_SPREAD = [.095, .09, .115, .12, .10, .15, .17];
+  const REST_BIAS = [.0014, .0012, .0018, .0024, .0016, .0042, .0060];
 
   let W_ = 0, H = 0, dpr = 1, RAD = 320, cx = 0, cy = 0;
-  let nodes = [], nodesByNet = [], edges = [], edgesByNet = [], order = [];
+  let nodes = [], nodesByNet = [], nodesByParcel = [], edges = [], edgesByNet = [], order = [];
   let pulses = [], sparks = [];
   let raf = null, scrollY = 0, startTime = 0, nextSpont = 0;
   const netAct = new Float32Array(7);
-  const netSeed = new Array(7).fill(null);
+  const netSeed = Array.from({ length: 7 }, () => []);
   let pending = [];
-  let pointerX = 0, pointerY = 0;
   const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
   const mix = (a, b, t) => a + (b - a) * t;
   const tiltX = -0.49, tiltZ = 0.075, FOCAL = 2.85;
 
   function nodeCount() {
     const w = window.innerWidth;
-    if (w < 620) return 760;
-    if (w < 980) return 1250;
-    if (w < 1400) return 2100;
+    if (w < 620) return 820;
+    if (w < 980) return 1450;
+    if (w < 1400) return 2400;
     return 3200;
   }
 
   function inBrain(x, y, z) {
-    const rz = 0.62;
+    const rz = 0.78;
     const taper = z > 0 ? 1 - 0.30 * (z / rz) : 1 + 0.05 * (z / rz);
-    const rx = 0.52 * taper, ry = 0.43 * (z > 0 ? 1 - 0.12 * (z / rz) : 1);
+    const rx = 0.55 * taper, ry = 0.50 * (z > 0 ? 1 - 0.12 * (z / rz) : 1);
     if ((x / rx) ** 2 + (y / ry) ** 2 + (z / rz) ** 2 > 1) return false;
     if (y > 0.12 && Math.abs(x) < 0.035) return false; // longitudinal fissure groove
     return true;
@@ -99,18 +186,22 @@ const BrainField = (() => {
     nodes = []; let guard = 0;
     while (nodes.length < count && guard < count * 50) {
       guard++;
-      const x = (Math.random() * 2 - 1) * 0.55, y = (Math.random() * 2 - 1) * 0.46, z = (Math.random() * 2 - 1) * 0.64;
+      const x = (Math.random() * 2 - 1) * 0.57, y = (Math.random() * 2 - 1) * 0.52, z = (Math.random() * 2 - 1) * 0.80;
       if (!inBrain(x, y, z)) continue;
       const p = assignParcel(x, y, z);
-      nodes.push({ x, y, z, net: p.net, parcel: p.parcel, size: 0.24 + Math.random() * 0.48, act: 0, sx: 0, sy: 0, depth: 0, scale: 1 });
+      nodes.push({ x, y, z, net: p.net, parcel: p.parcel, hemi: x < 0 ? -1 : 1, size: 0.15 + Math.random() * 0.34, act: 0, sx: 0, sy: 0, depth: 0, scale: 1 });
     }
     order = nodes.map((_, i) => i);
     nodesByNet = Array.from({ length: 7 }, () => []);
-    nodes.forEach((n, i) => nodesByNet[n.net].push(i));
+    nodesByParcel = Array.from({ length: PARCELS.length }, () => []);
+    nodes.forEach((n, i) => {
+      nodesByNet[n.net].push(i);
+      nodesByParcel[n.parcel].push(i);
+    });
 
     edges = [];
     edgesByNet = Array.from({ length: 7 }, () => []);
-    const N = nodes.length, cell = 0.132, rE2 = 0.132 * 0.132, maxDeg = 7, seen = new Set();
+    const N = nodes.length, cell = 0.126, rE2 = 0.126 * 0.126, maxDeg = 4, seen = new Set();
     const grid = new Map();
     const gkey = (x, y, z) => `${Math.floor(x / cell)},${Math.floor(y / cell)},${Math.floor(z / cell)}`;
     nodes.forEach((n, i) => {
@@ -118,14 +209,14 @@ const BrainField = (() => {
       if (!grid.has(key)) grid.set(key, []);
       grid.get(key).push(i);
     });
-    function addEdge(i, j, long = false, wOverride = null) {
+    function addEdge(i, j, long = false, wOverride = null, tract = "local") {
       if (i === j) return false;
       const key = i < j ? i * N + j : j * N + i;
       if (seen.has(key)) return false;
       seen.add(key);
       const ni = nodes[i], nj = nodes[j];
       const idx = edges.length;
-      edges.push({ i, j, w: wOverride == null ? W[ni.net][nj.net] : wOverride, long });
+      edges.push({ i, j, w: wOverride == null ? W[ni.net][nj.net] : wOverride, long, tract });
       edgesByNet[ni.net].push(idx);
       if (nj.net !== ni.net) edgesByNet[nj.net].push(idx);
       return true;
@@ -141,6 +232,7 @@ const BrainField = (() => {
         for (const j of bucket) {
           if (j === i) continue;
           const b = nodes[j];
+          if (a.hemi !== b.hemi) continue;
           if (W[a.net][b.net] < 0.14) continue;
           const d2 = (a.x - b.x) ** 2 + (a.y - b.y) ** 2 + (a.z - b.z) ** 2;
           if (d2 < rE2) cand.push([d2, j]);
@@ -150,16 +242,42 @@ const BrainField = (() => {
       for (let k = 0; k < Math.min(cand.length, maxDeg); k++) addEdge(i, cand[k][1]);
     }
 
-    // Sparse long-range association tracts make DMN-FP-salience interactions legible without labels.
-    for (let a = 0; a < 7; a++) for (let b = a + 1; b < 7; b++) {
-      const w = W[a][b];
-      if (w < 0.34) continue;
-      const repeats = Math.round(5 + w * 24 + (a === 6 || b === 6 ? 7 : 0) + (a === 5 || b === 5 ? 5 : 0));
-      const A = nodesByNet[a], B = nodesByNet[b];
-      for (let k = 0; k < repeats && A.length && B.length; k++) {
-        const ia = A[(Math.random() * A.length) | 0], ib = B[(Math.random() * B.length) | 0];
-        addEdge(ia, ib, true, w);
+    function pickNode(net, hemi) {
+      const pool = nodesByNet[net].filter((idx) => nodes[idx].hemi === hemi);
+      return pool.length ? pool[(Math.random() * pool.length) | 0] : null;
+    }
+    function pickParcel(parcel) {
+      const pool = nodesByParcel[parcel] || [];
+      return pool.length ? pool[(Math.random() * pool.length) | 0] : null;
+    }
+    for (const hemi of [-1, 1]) {
+      for (let a = 0; a < 7; a++) for (let b = a + 1; b < 7; b++) {
+        const w = W[a][b];
+        if (w < 0.34) continue;
+        const repeats = Math.round(2 + w * 10 + (a === 6 || b === 6 ? 3 : 0) + (a === 5 || b === 5 ? 2 : 0));
+        for (let k = 0; k < repeats; k++) {
+          const ia = pickNode(a, hemi), ib = pickNode(b, hemi);
+          if (ia == null || ib == null) continue;
+          const A = nodes[ia], B = nodes[ib];
+          const d2 = (A.x - B.x) ** 2 + (A.y - B.y) ** 2 + (A.z - B.z) ** 2;
+          if (d2 > 0.06 && d2 < 0.85) addEdge(ia, ib, true, w, "association");
+        }
       }
+    }
+
+    const rightParcels = PARCELS.filter((p) => p.x > 0.035);
+    for (const lp of PARCELS) {
+      if (lp.x > -0.035) continue;
+      let best = Infinity, rp = null;
+      for (const cand of rightParcels) {
+        if (cand.net !== lp.net) continue;
+        const d = (-lp.x - cand.x) ** 2 + (lp.y - cand.y) ** 2 + (lp.z - cand.z) ** 2;
+        if (d < best) { best = d; rp = cand; }
+      }
+      if (!rp || best > 0.10) continue;
+      if (lp.net !== 6 && lp.net !== 5 && lp.net !== 1 && Math.random() > 0.32) continue;
+      const ia = pickParcel(lp.parcel), ib = pickParcel(rp.parcel);
+      if (ia != null && ib != null) addEdge(ia, ib, true, W[lp.net][rp.net] * 0.55, "commissural");
     }
   }
 
@@ -175,7 +293,7 @@ const BrainField = (() => {
   }
 
   function projectPoint(x, y, z, t) {
-    const ay = t * 0.000148 + pointerX * 0.5;
+    const ay = t * 0.000148;
     const cosY = Math.cos(ay), sinY = Math.sin(ay), cosT = Math.cos(tiltX), sinT = Math.sin(tiltX);
     const cosZ = Math.cos(tiltZ), sinZ = Math.sin(tiltZ);
     const x1 = x * cosY + z * sinY, z1 = -x * sinY + z * cosY, y1 = y;
@@ -200,7 +318,10 @@ const BrainField = (() => {
   }
   function emitNetworkPulses(net, strength) {
     if (reduceMotion) return;
-    const pool = edgesByNet[net] || [];
+    const pool = (edgesByNet[net] || []).filter((idx) => {
+      const e = edges[idx], a = nodes[e.i], b = nodes[e.j];
+      return !e.long && a.net === net && b.net === net;
+    });
     if (!pool.length) return;
     const amount = Math.round((net === 6 ? 26 : net === 5 ? 21 : net === 3 ? 17 : 12) * clamp(strength, 0.35, 1.35));
     const c = COL[net];
@@ -209,10 +330,10 @@ const BrainField = (() => {
       pulses.push({
         a: e.i,
         b: e.j,
-        t: Math.random() * (e.long ? 0.22 : 0.38),
-        v: (e.long ? 0.014 : 0.031) + Math.random() * (e.long ? 0.014 : 0.026),
+        t: Math.random() * 0.38,
+        v: 0.031 + Math.random() * 0.026,
         c,
-        long: e.long,
+        long: false,
       });
     }
     if (pulses.length > 520) pulses.splice(0, pulses.length - 520);
@@ -220,6 +341,16 @@ const BrainField = (() => {
   function nearestInNet(net, x, y, z) {
     let best = Infinity, bn = null;
     for (const n of nodes) if (n.net === net) { const d = (n.x - x) ** 2 + (n.y - y) ** 2 + (n.z - z) ** 2; if (d < best) { best = d; bn = n; } }
+    return bn;
+  }
+  function distantInNet(net, x, y, z) {
+    const pool = nodesByNet[net] || [];
+    let best = -1, bn = null;
+    for (let k = 0; k < 30 && pool.length; k++) {
+      const n = nodes[pool[(Math.random() * pool.length) | 0]];
+      const d = (n.x - x) ** 2 + (n.y - y) ** 2 + (n.z - z) ** 2;
+      if (d > best) { best = d; bn = n; }
+    }
     return bn;
   }
   function relayWeight(from, to) {
@@ -232,8 +363,22 @@ const BrainField = (() => {
   }
   function activate(net, pt, strength, now, hop = 0) {
     const gain = NET_GAIN[net];
-    netAct[net] = Math.min(2.1, Math.max(netAct[net], strength * gain));
-    netSeed[net] = { x: pt.x, y: pt.y, z: pt.z, t0: now };
+    const seedStrength = Math.min(2.1, strength * gain);
+    netAct[net] = Math.max(netAct[net], seedStrength);
+    netSeed[net].push({ x: pt.x, y: pt.y, z: pt.z, t0: now, strength: seedStrength });
+    if (netSeed[net].length > 7) netSeed[net].splice(0, netSeed[net].length - 7);
+    if (strength > 0.48 && hop < 2) {
+      const distant = distantInNet(net, pt.x, pt.y, pt.z);
+      if (distant) {
+        netSeed[net].push({
+          x: distant.x,
+          y: distant.y,
+          z: distant.z,
+          t0: now + 260 + Math.random() * 280,
+          strength: seedStrength * (net === 6 ? 0.58 : 0.46),
+        });
+      }
+    }
     addSparks(pt.sx || cx, pt.sy || cy, net, 4 + (strength * (net === 6 ? 11 : 7)) | 0);
     emitNetworkPulses(net, strength);
     if (strength < 0.18 || hop >= 3) return;
@@ -264,17 +409,21 @@ const BrainField = (() => {
   }
   function updateActivation(t) {
     for (let i = 0; i < 7; i++) netAct[i] *= i === 6 ? 0.991 : i === 5 ? 0.988 : 0.983;
+    for (let i = 0; i < 7; i++) netSeed[i] = netSeed[i].filter((seed) => t - seed.t0 < 2600);
     for (const n of nodes) {
-      const seed = netSeed[n.net];
+      const seeds = netSeed[n.net];
       const rhythm = reduceMotion ? 0 : (Math.sin(t * (0.00034 + n.net * 0.000035) + n.net * 1.77 + n.parcel * 0.31) + 1) * 0.5;
       const rest = REST_BIAS[n.net] * (0.45 + rhythm * 0.55);
       let target = rest;
-      if (seed) {
+      for (const seed of seeds) {
+        if (t < seed.t0) continue;
+        const age = t - seed.t0;
         const dist = Math.sqrt((n.x - seed.x) ** 2 + (n.y - seed.y) ** 2 + (n.z - seed.z) ** 2);
-        const wf = (t - seed.t0) * 0.0013;
+        const wf = age * 0.00105;
         const spread = NET_SPREAD[n.net];
-        const gate = dist <= wf ? 1 : Math.exp(-((dist - wf) ** 2) / (2 * spread * spread));
-        target = Math.max(target, netAct[n.net] * gate);
+        const shell = Math.exp(-((dist - wf) ** 2) / (2 * spread * spread)) * Math.exp(-age / 1800);
+        const local = Math.exp(-(dist * dist) / (2 * (spread * 0.75) ** 2)) * Math.exp(-age / 620);
+        target = Math.max(target, seed.strength * Math.max(shell, local * 0.62));
       }
       n.act += (target - n.act) * (n.net === 6 ? 0.13 : 0.16);
       n.act *= n.net === 6 ? 0.991 : n.net === 5 ? 0.988 : 0.984;
@@ -287,69 +436,18 @@ const BrainField = (() => {
     for (const p of PARCELS) {
       const q = projectPoint(p.x, p.y, p.z, t);
       const c = COL[p.net];
-      const pc = [mix(GREY[0], c[0], 0.035), mix(GREY[1], c[1], 0.035), mix(GREY[2], c[2], 0.035)];
+      const pc = [mix(GREY[0], c[0], 0.012), mix(GREY[1], c[1], 0.012), mix(GREY[2], c[2], 0.012)];
       const fog = 0.25 + 0.55 * clamp((q.depth + 0.7) / 1.4, 0, 1);
       const r = RAD * q.scale * (0.038 + (p.parcel % 3) * 0.006);
       const g = ctx.createRadialGradient(q.sx, q.sy, 0, q.sx, q.sy, r);
-      g.addColorStop(0, `rgba(${pc[0] | 0},${pc[1] | 0},${pc[2] | 0},${0.052 * fog})`);
-      g.addColorStop(0.58, `rgba(${pc[0] | 0},${pc[1] | 0},${pc[2] | 0},${0.018 * fog})`);
+      g.addColorStop(0, `rgba(${pc[0] | 0},${pc[1] | 0},${pc[2] | 0},${0.090 * fog})`);
+      g.addColorStop(0.58, `rgba(${pc[0] | 0},${pc[1] | 0},${pc[2] | 0},${0.034 * fog})`);
       g.addColorStop(1, `rgba(${pc[0] | 0},${pc[1] | 0},${pc[2] | 0},0)`);
       ctx.fillStyle = g;
       ctx.beginPath();
       ctx.arc(q.sx, q.sy, r, 0, 6.2832);
       ctx.fill();
     }
-  }
-
-  function drawParcelContours() {
-    const stats = new Map();
-    for (const n of nodes) {
-      const key = n.net * 32 + n.parcel;
-      let s = stats.get(key);
-      if (!s) { s = { net: n.net, c: 0, sx: 0, sy: 0, xx: 0, yy: 0, xy: 0, depth: 0, act: 0 }; stats.set(key, s); }
-      s.c++; s.sx += n.sx; s.sy += n.sy; s.xx += n.sx * n.sx; s.yy += n.sy * n.sy; s.xy += n.sx * n.sy; s.depth += n.depth; if (n.act > s.act) s.act = n.act;
-    }
-    ctx.save();
-    ctx.globalCompositeOperation = "screen";
-    for (const s of stats.values()) {
-      if (s.c < 10) continue;
-      const mx = s.sx / s.c, my = s.sy / s.c;
-      const vx = Math.max(8, s.xx / s.c - mx * mx), vy = Math.max(8, s.yy / s.c - my * my);
-      const cov = s.xy / s.c - mx * my;
-      const root = Math.sqrt((vx - vy) * (vx - vy) + 4 * cov * cov);
-      const l1 = Math.max(1, (vx + vy + root) * 0.5);
-      const l2 = Math.max(1, (vx + vy - root) * 0.5);
-      const a = clamp(Math.sqrt(l1) * 2.45, 18, 92);
-      const b = clamp(Math.sqrt(l2) * 2.25, 11, 58);
-      const angle = 0.5 * Math.atan2(2 * cov, vx - vy);
-      const depth = s.depth / s.c;
-      const fog = 0.32 + 0.68 * clamp((depth + 0.7) / 1.4, 0, 1);
-      const active = clamp(s.act, 0, 1.4);
-      const c = COL[s.net];
-      const tint = clamp(active * 0.55, 0.045, 1);
-      const col = [mix(GREY[0], c[0], tint), mix(GREY[1], c[1], tint), mix(GREY[2], c[2], tint)];
-      ctx.translate(mx, my);
-      ctx.rotate(angle);
-      ctx.shadowColor = `rgba(${col[0] | 0},${col[1] | 0},${col[2] | 0},${0.08 + active * 0.18})`;
-      ctx.shadowBlur = 2 + active * 4;
-      ctx.beginPath();
-      ctx.ellipse(0, 0, a, b, 0, 0, 6.2832);
-      ctx.fillStyle = `rgba(${col[0] | 0},${col[1] | 0},${col[2] | 0},${(0.008 + active * 0.018) * fog})`;
-      ctx.fill();
-      ctx.strokeStyle = `rgba(${col[0] | 0},${col[1] | 0},${col[2] | 0},${(0.16 + active * 0.14) * fog})`;
-      ctx.lineWidth = 0.46 + active * 0.34;
-      ctx.setLineDash([4, 5.5]);
-      ctx.stroke();
-      ctx.shadowBlur = 0;
-      ctx.beginPath();
-      ctx.ellipse(0, 0, a * 0.63, b * 0.63, 0, 0, 6.2832);
-      ctx.strokeStyle = `rgba(${col[0] | 0},${col[1] | 0},${col[2] | 0},${(0.045 + active * 0.08) * fog})`;
-      ctx.lineWidth = 0.32 + active * 0.2;
-      ctx.setLineDash([]);
-      ctx.stroke();
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    }
-    ctx.restore();
   }
 
   function drawEdges() {
@@ -361,19 +459,20 @@ const BrainField = (() => {
       const sameNet = a.net === b.net;
       const sameParcel = sameNet && a.parcel === b.parcel;
       let col, alpha;
+      if (e.long && act < 0.09) continue;
       if (act > 0.05) {
         const c = a.act > b.act ? COL[a.net] : COL[b.net];
         col = [mix(GREY[0], c[0], act), mix(GREY[1], c[1], act), mix(GREY[2], c[2], act)];
-        alpha = (0.026 + e.w * 0.026) * fog + act * 0.11;
+        alpha = (0.024 + e.w * 0.022) * fog + act * 0.095;
       } else {
         const c = sameNet ? COL[a.net] : GREY;
-        const tint = sameNet ? 0.025 : 0;
+        const tint = sameNet ? 0.010 : 0;
         col = [mix(GREY[0], c[0], tint), mix(GREY[1], c[1], tint), mix(GREY[2], c[2], tint)];
-        alpha = (0.014 + e.w * 0.022) * fog * (sameNet ? 0.82 : 0.32) * (sameParcel ? 1.18 : 1);
+        alpha = (0.020 + e.w * 0.026) * fog * (sameNet ? 1.0 : 0.22) * (sameParcel ? 1.18 : 1);
       }
-      alpha *= e.long ? (act > 0.05 ? 1.12 : 0.32) : 1;
+      alpha *= e.long ? (e.tract === "commissural" ? 0.22 : 0.34) : 1;
       ctx.strokeStyle = `rgba(${col[0] | 0},${col[1] | 0},${col[2] | 0},${alpha})`;
-      ctx.lineWidth = (e.long ? 0.22 : 0.25) + act * (e.long ? 0.52 : 0.32);
+      ctx.lineWidth = (e.long ? 0.16 : 0.24) + act * (e.long ? 0.22 : 0.30);
       ctx.beginPath(); ctx.moveTo(a.sx, a.sy); ctx.lineTo(b.sx, b.sy); ctx.stroke();
     }
   }
@@ -382,16 +481,16 @@ const BrainField = (() => {
     for (const k of order) {
       const n = nodes[k], a = n.act, c = COL[n.net];
       const fog = 0.35 + 0.65 * clamp((n.depth + 0.7) / 1.4, 0, 1);
-      const baseTint = 0.012 + (n.parcel % 4) * 0.003;
+      const baseTint = 0.005 + (n.parcel % 4) * 0.0012;
       const tint = a > 0.05 ? Math.min(1, baseTint + a) : baseTint;
       const col = [mix(GREY[0], c[0], tint) | 0, mix(GREY[1], c[1], tint) | 0, mix(GREY[2], c[2], tint) | 0];
       const r = n.size * n.scale * (1 + a * 0.55);
       if (a > 0.05) { ctx.beginPath(); ctx.arc(n.sx, n.sy, r * 3.4, 0, 6.2832); ctx.fillStyle = `rgba(${col[0]},${col[1]},${col[2]},${a * 0.075 * fog})`; ctx.fill(); }
       ctx.beginPath(); ctx.arc(n.sx, n.sy, r, 0, 6.2832);
-      ctx.fillStyle = `rgba(${col[0]},${col[1]},${col[2]},${(0.12 + a * 0.6) * fog})`; ctx.fill();
+      ctx.fillStyle = `rgba(${col[0]},${col[1]},${col[2]},${(0.21 + a * 0.56) * fog})`; ctx.fill();
       if (a < 0.05 && n.parcel % 7 === 0) {
         ctx.beginPath(); ctx.arc(n.sx, n.sy, r * 1.9, 0, 6.2832);
-        ctx.strokeStyle = `rgba(${GREY[0]},${GREY[1]},${GREY[2]},${0.04 * fog})`;
+        ctx.strokeStyle = `rgba(${GREY[0]},${GREY[1]},${GREY[2]},${0.052 * fog})`;
         ctx.lineWidth = 0.22;
         ctx.stroke();
       }
@@ -403,8 +502,8 @@ const BrainField = (() => {
       p.t += p.v;
       const a = nodes[p.a], b = nodes[p.b], c = p.c;
       const x = a.sx + (b.sx - a.sx) * p.t, y = a.sy + (b.sy - a.sy) * p.t;
-      ctx.beginPath(); ctx.arc(x, y, p.long ? 1.85 : 1.35, 0, 6.2832); ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${p.long ? 0.82 : 0.95})`; ctx.fill();
-      ctx.beginPath(); ctx.arc(x, y, p.long ? 6.2 : 4.2, 0, 6.2832); ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${p.long ? 0.14 : 0.095})`; ctx.fill();
+      ctx.beginPath(); ctx.arc(x, y, 1.15, 0, 6.2832); ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},0.92)`; ctx.fill();
+      ctx.beginPath(); ctx.arc(x, y, 3.7, 0, 6.2832); ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},0.085)`; ctx.fill();
     }
   }
   function drawSparks() {
@@ -428,7 +527,6 @@ const BrainField = (() => {
     ctx.globalAlpha = intro * dim;
     drawParcels(t);
     drawEdges();
-    drawParcelContours();
     drawNodes();
     drawPulses();
     drawSparks();
@@ -445,7 +543,6 @@ const BrainField = (() => {
   function start() {
     resize();
     window.addEventListener("resize", () => { if (raf) cancelAnimationFrame(raf); startTime = 0; resize(); if (reduceMotion) frame(0); else raf = requestAnimationFrame(frame); });
-    window.addEventListener("pointermove", (e) => { pointerX = (e.clientX / window.innerWidth - 0.5) * 0.6; pointerY = e.clientY / window.innerHeight - 0.5; }, { passive: true });
     window.addEventListener("pointerdown", (e) => igniteAt(e.clientX, e.clientY), { passive: true });
     window.addEventListener("scroll", () => { scrollY = window.scrollY; }, { passive: true });
     if (reduceMotion) frame(0); else raf = requestAnimationFrame(frame);
