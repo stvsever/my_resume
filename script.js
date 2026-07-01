@@ -158,10 +158,10 @@ const BrainField = (() => {
 
   function nodeCount() {
     const w = window.innerWidth;
-    if (w < 620) return 820;
-    if (w < 980) return 1450;
-    if (w < 1400) return 2400;
-    return 3200;
+    if (w < 620) return 940;
+    if (w < 980) return 1700;
+    if (w < 1400) return 3000;
+    return 4200;
   }
 
   function inBrain(x, y, z) {
@@ -311,12 +311,12 @@ const BrainField = (() => {
   }
 
   /* activation */
-  function addNodeFlashes(net, pt, amt, strength) {
+  function addNodeFlashes(net, pt, amt, strength, delay = 0) {
     if (reduceMotion) return;
     const pool = nodesByNet[net] || [];
     if (!pool.length) return;
     const local = [];
-    const radius2 = (net === 6 ? 0.088 : net === 5 ? 0.070 : 0.052);
+    const radius2 = (net === 6 ? 0.115 : net === 5 ? 0.088 : net === 3 ? 0.074 : 0.062);
     for (const idx of pool) {
       const n = nodes[idx];
       const d2 = (n.x - pt.x) ** 2 + (n.y - pt.y) ** 2 + (n.z - pt.z) ** 2;
@@ -325,19 +325,21 @@ const BrainField = (() => {
     local.sort((a, b) => a[0] - b[0]);
     const sourceId = pt.id != null ? pt.id : local[0]?.[1];
     if (sourceId != null) local.unshift([0, sourceId]);
-    const amount = Math.max(amt, Math.round((net === 6 ? 34 : net === 5 ? 27 : net === 3 ? 22 : 16) * clamp(strength, 0.35, 1.25)));
+    const amount = Math.max(amt, Math.round((net === 6 ? 46 : net === 5 ? 36 : net === 3 ? 30 : 22) * clamp(strength, 0.35, 1.3)));
     const c = COL[net];
     for (let i = 0; i < amount; i++) {
       const pick = local.length ? local[Math.min(local.length - 1, (Math.random() ** 1.7 * local.length) | 0)] : [0, pool[(Math.random() * pool.length) | 0]];
+      const d = Math.sqrt(pick[0] || 0);
       nodeFlashes.push({
         i: pick[1],
-        t: Math.random() * 0.16,
-        v: 0.040 + Math.random() * 0.032,
-        r: 1.0 + Math.random() * 1.8,
+        t: -(delay + Math.min(0.34, d * (net === 6 ? 1.05 : 0.9)) + Math.random() * 0.16),
+        v: 0.046 + Math.random() * 0.034,
+        r: 0.85 + Math.random() * 1.55,
+        phase: Math.random() * 6.2832,
         c
       });
     }
-    if (nodeFlashes.length > 620) nodeFlashes.splice(0, nodeFlashes.length - 620);
+    if (nodeFlashes.length > 940) nodeFlashes.splice(0, nodeFlashes.length - 940);
   }
   function nearestInNet(net, x, y, z) {
     let best = Infinity, bn = null;
@@ -378,6 +380,7 @@ const BrainField = (() => {
           t0: now + 260 + Math.random() * 280,
           strength: seedStrength * (net === 6 ? 0.58 : 0.46),
         });
+        addNodeFlashes(net, distant, 5 + (strength * (net === 6 ? 12 : 8)) | 0, seedStrength * 0.44, 0.22 + Math.random() * 0.18);
       }
     }
     addNodeFlashes(net, pt, 4 + (strength * (net === 6 ? 11 : 7)) | 0, strength);
@@ -390,7 +393,7 @@ const BrainField = (() => {
       const relayBoost = net === 6 && j === 5 ? 1.08 : net === 5 ? 0.9 : 0.78;
       pending.push({ net: j, pt: tn, strength: strength * w * relayBoost, fireAt: now + 140 + (1 - w) * 470 + Math.random() * 150, hop: hop + 1 });
     }
-    if (pending.length > 120) pending.splice(0, pending.length - 120);
+    if (pending.length > 150) pending.splice(0, pending.length - 150);
   }
   function processPending(now) {
     for (let i = pending.length - 1; i >= 0; i--) if (now >= pending[i].fireAt) { const e = pending[i]; pending.splice(i, 1); activate(e.net, e.pt, e.strength, now, e.hop); }
@@ -405,7 +408,7 @@ const BrainField = (() => {
     let pick = null, cnt = 0;
     for (const n of nodes) if (n.net === net && Math.random() < 1 / (++cnt)) pick = n;
     if (pick) activate(net, pick, net === 6 ? 1.18 : net === 5 ? 1.08 : 0.96, now);
-    nextSpont = now + 330 + Math.random() * 620;
+    nextSpont = now + 250 + Math.random() * 540;
   }
   function updateActivation(t) {
     for (let i = 0; i < 7; i++) netAct[i] *= i === 6 ? 0.991 : i === 5 ? 0.988 : 0.983;
@@ -487,10 +490,10 @@ const BrainField = (() => {
       const r = n.size * n.scale * (1 + a * 0.55);
       if (a > 0.05) { ctx.beginPath(); ctx.arc(n.sx, n.sy, r * 3.4, 0, 6.2832); ctx.fillStyle = `rgba(${col[0]},${col[1]},${col[2]},${a * 0.075 * fog})`; ctx.fill(); }
       ctx.beginPath(); ctx.arc(n.sx, n.sy, r, 0, 6.2832);
-      ctx.fillStyle = `rgba(${col[0]},${col[1]},${col[2]},${(0.38 + a * 0.48) * fog})`; ctx.fill();
+      ctx.fillStyle = `rgba(${col[0]},${col[1]},${col[2]},${(0.43 + a * 0.46) * fog})`; ctx.fill();
       if (a < 0.05 && n.parcel % 7 === 0) {
         ctx.beginPath(); ctx.arc(n.sx, n.sy, r * 1.9, 0, 6.2832);
-        ctx.strokeStyle = `rgba(${GREY[0]},${GREY[1]},${GREY[2]},${0.085 * fog})`;
+        ctx.strokeStyle = `rgba(${GREY[0]},${GREY[1]},${GREY[2]},${0.098 * fog})`;
         ctx.lineWidth = 0.22;
         ctx.stroke();
       }
@@ -502,16 +505,18 @@ const BrainField = (() => {
       p.t += p.v;
       const n = nodes[p.i];
       if (!n) continue;
+      if (p.t < 0) continue;
       const life = 1 - p.t;
       const fog = 0.35 + 0.65 * clamp((n.depth + 0.7) / 1.4, 0, 1);
-      const r = (n.size * n.scale + p.r) * (0.9 + p.t * 1.8);
+      const shimmer = 1 + Math.sin(p.t * 14 + p.phase) * 0.12;
+      const r = (n.size * n.scale + p.r) * (0.82 + p.t * 1.9) * shimmer;
       ctx.beginPath();
       ctx.arc(n.sx, n.sy, r, 0, 6.2832);
-      ctx.fillStyle = `rgba(${p.c[0]},${p.c[1]},${p.c[2]},${0.18 * life * fog})`;
+      ctx.fillStyle = `rgba(${p.c[0]},${p.c[1]},${p.c[2]},${0.20 * life * fog})`;
       ctx.fill();
       ctx.beginPath();
       ctx.arc(n.sx, n.sy, Math.max(0.75, n.size * n.scale * 1.7), 0, 6.2832);
-      ctx.fillStyle = `rgba(${p.c[0]},${p.c[1]},${p.c[2]},${0.92 * life * fog})`;
+      ctx.fillStyle = `rgba(${p.c[0]},${p.c[1]},${p.c[2]},${0.96 * life * fog})`;
       ctx.fill();
     }
   }
