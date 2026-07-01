@@ -13,7 +13,8 @@ const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").match
    rest): its ROIs light up in the network colour, a 3D
    wavefront sweeps the network, and the activation disperses
    to functionally connected networks (per a between-network
-   connectivity matrix), then decays back to grey.
+   connectivity matrix), then decays back to grey. Pointer hover
+   excites the nearest projected nodes without changing rotation.
    ========================================================= */
 const BrainField = (() => {
   const canvas = document.getElementById("neural-field");
@@ -149,6 +150,7 @@ const BrainField = (() => {
   let nodes = [], nodesByNet = [], nodesByParcel = [], edges = [], edgesByNet = [], order = [];
   let nodeFlashes = [];
   let raf = null, scrollY = 0, startTime = 0, nextSpont = 0;
+  let hoverRAF = false, hoverPoint = null, lastHoverAt = 0, lastHoverNode = -1, lastHoverX = 0, lastHoverY = 0;
   const netAct = new Float32Array(7);
   const netSeed = Array.from({ length: 7 }, () => []);
   let pending = [];
@@ -544,11 +546,49 @@ const BrainField = (() => {
     for (const n of nodes) { const d = (n.sx - x) ** 2 + (n.sy - y) ** 2; if (d < best) { best = d; bn = n; } }
     if (bn) activate(bn.net, bn, 1.1, performance.now());
   }
+  function hoverAt(x, y, now = performance.now()) {
+    if (reduceMotion || !nodes.length) return;
+    if (Math.abs(x - cx) > RAD * 0.72 || Math.abs(y - cy) > RAD * 0.58) return;
+
+    let best = Infinity, bn = null;
+    for (const n of nodes) {
+      const d = (n.sx - x) ** 2 + (n.sy - y) ** 2;
+      if (d < best) { best = d; bn = n; }
+    }
+    const maxDist = clamp(RAD * 0.045, 18, 34);
+    if (!bn || best > maxDist * maxDist) return;
+
+    const dt = now - lastHoverAt;
+    if (dt < 34 || (dt < 78 && bn.id === lastHoverNode)) return;
+
+    const dist = Math.sqrt(best);
+    const proximity = 1 - dist / maxDist;
+    const travel = lastHoverAt ? Math.hypot(x - lastHoverX, y - lastHoverY) : 0;
+    lastHoverAt = now; lastHoverNode = bn.id; lastHoverX = x; lastHoverY = y;
+
+    const networkBias = bn.net === 6 ? 0.08 : bn.net === 5 ? 0.05 : bn.net === 3 ? 0.035 : 0;
+    const strength = clamp(0.42 + proximity * 0.44 + clamp(travel / 110, 0, 0.20) + networkBias, 0.42, 1.04);
+    activate(bn.net, bn, strength, now);
+  }
+  function queueHover(x, y) {
+    hoverPoint = { x, y };
+    if (hoverRAF) return;
+    hoverRAF = true;
+    requestAnimationFrame(() => {
+      hoverRAF = false;
+      if (hoverPoint) hoverAt(hoverPoint.x, hoverPoint.y);
+    });
+  }
 
   function start() {
     resize();
     window.addEventListener("resize", () => { if (raf) cancelAnimationFrame(raf); startTime = 0; resize(); if (reduceMotion) frame(0); else raf = requestAnimationFrame(frame); });
     window.addEventListener("pointerdown", (e) => igniteAt(e.clientX, e.clientY), { passive: true });
+    window.addEventListener("pointermove", (e) => {
+      if (e.pointerType === "touch") return;
+      if (e.target?.closest?.("a, button, input, textarea, select, label, [role='button'], [role='tab']")) return;
+      queueHover(e.clientX, e.clientY);
+    }, { passive: true });
     window.addEventListener("scroll", () => { scrollY = window.scrollY; }, { passive: true });
     if (reduceMotion) frame(0); else raf = requestAnimationFrame(frame);
   }
