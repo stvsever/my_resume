@@ -304,7 +304,7 @@ main { position: relative; z-index: 2; }
 @media (max-width: 640px) { .edu { grid-template-columns: 1fr; gap: 8px; } .edu-year { padding-top: 0; } }
 
 /* =========================================================
-   CAPABILITIES
+   PROJECTS
    ========================================================= */
 .cap-tabs { display: inline-flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 26px; }
 .cap-tab { display: inline-flex; align-items: center; gap: 9px; font-family: var(--sans); font-size: 13.5px; font-weight: 600; color: var(--ink-soft); cursor: pointer; padding: 11px 18px; border-radius: 999px; border: 1px solid var(--line); background: rgba(126, 158, 214, .04); transition: all .25s var(--ease); }
@@ -329,14 +329,6 @@ main { position: relative; z-index: 2; }
 .sys-tags span { font-family: var(--mono); font-size: 11.5px; color: var(--ink-soft); padding: 5px 10px; border-radius: 999px; background: rgba(126, 158, 214, .07); border: 1px solid var(--line); }
 .sys-tags .tag-private { color: var(--violet); border-color: rgba(155, 108, 255, .4); background: rgba(155, 108, 255, .08); }
 .sys .repo-link { margin-top: 14px; padding-top: 13px; }
-
-.toolbox { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(18px, 4vw, 40px); max-width: 920px; margin: 36px auto 0; padding-top: 30px; border-top: 1px solid var(--line-soft); }
-.tb-group h4 { font-family: var(--mono); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--cyan); margin-bottom: 13px; }
-.tb-tags { display: flex; flex-wrap: wrap; gap: 8px; }
-.tb-tags span { font-family: var(--mono); font-size: 12px; color: var(--ink-soft); padding: 7px 12px; border-radius: 999px; border: 1px solid var(--line); background: rgba(126, 158, 214, .04); transition: transform .3s var(--ease), border-color .3s, color .3s, background .3s; }
-.tb-tags span:hover { transform: translateY(-2px); border-color: var(--cyan); color: var(--cyan); background: rgba(59, 231, 255, .07); }
-@media (max-width: 880px) { .toolbox { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 520px) { .toolbox { grid-template-columns: 1fr; } }
 
 /* =========================================================
    CONNECT

@@ -736,9 +736,9 @@ function setupRadar() {
 }
 
 /* =========================================================
-   CAPABILITIES
+   PROJECTS
    ========================================================= */
-function setupCapabilities() {
+function setupProjects() {
   const tabs = [...document.querySelectorAll(".cap-tab")];
   const panels = [...document.querySelectorAll(".cap-panel")];
   if (!tabs.length) return;
@@ -792,7 +792,7 @@ function init() {
   setupReveal();
   setupMatrix();
   setupRadar();
-  setupCapabilities();
+  setupProjects();
   setupContact();
 }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
