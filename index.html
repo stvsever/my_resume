@@ -261,90 +261,108 @@
       <div class="block-head centered" data-reveal>
         <span class="idx">02</span>
         <h2>Capabilities</h2>
-        <p class="head-sub">What I actually build with. Four capabilities, each backed by real open-source engines and the methods behind them.</p>
+        <p class="head-sub">What I actually build with. Four non-overlapping capabilities, grounded in the repository methods and systems behind them.</p>
         <div class="cap-tabs" role="tablist" aria-label="Capabilities">
-          <button class="cap-tab is-active" role="tab" aria-selected="true" type="button" data-cap="agents"><b>01</b><span>Multi-agent AI</span></button>
-          <button class="cap-tab" role="tab" aria-selected="false" type="button" data-cap="ontology"><b>02</b><span>Ontology &amp; GraphRAG</span></button>
-          <button class="cap-tab" role="tab" aria-selected="false" type="button" data-cap="measurement"><b>03</b><span>Behavioral measurement</span></button>
-          <button class="cap-tab" role="tab" aria-selected="false" type="button" data-cap="compute"><b>04</b><span>Explainable compute</span></button>
+          <button class="cap-tab is-active" role="tab" aria-selected="true" type="button" data-cap="ml"><b>01</b><span>Machine Learning</span></button>
+          <button class="cap-tab" role="tab" aria-selected="false" type="button" data-cap="ontology"><b>02</b><span>Ontology-based Agentic AI</span></button>
+          <button class="cap-tab" role="tab" aria-selected="false" type="button" data-cap="measurement"><b>03</b><span>Behavioral Measurement</span></button>
+          <button class="cap-tab" role="tab" aria-selected="false" type="button" data-cap="autonomy"><b>04</b><span>Digital Autonomy &amp; Security</span></button>
         </div>
       </div>
 
       <div class="cap-stage" data-reveal>
-        <article class="cap-panel is-active" data-cap-panel="agents">
-          <p class="cap-lead">Orchestrated LLM agents with explicit critic loops and schema-validated state, never a single prompt.</p>
+        <article class="cap-panel is-active" data-cap-panel="ml">
+          <p class="cap-lead">Machine-learning pipelines for attribution, semantic measurement, prediction, validation, and model auditability.</p>
           <ul class="sys-list">
-            <li class="sys"><div class="sys-head"><h3>COMPASS Engine</h3><span class="sys-meta">clinical decision support</span></div>
-              <p>A five-agent pipeline (orchestrator, executor, integrator, predictor, critic) plus a communicator that writes evidence-grounded phenotyping reports. Zero-shot, multimodal, HPC-ready.</p>
-              <div class="sys-tags"><span>5-agent orchestration</span><span>OpenRouter / local LLMs</span><span>Pydantic</span><span>Slurm + Apptainer</span></div>
-              <a class="repo-link" href="https://github.com/stvsever/COMPASS-Engine" target="_blank" rel="noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5a9.5 9.5 0 0 0-3 18.52c.48.1.66-.2.66-.46v-1.72c-2.68.58-3.24-1.14-3.24-1.14-.44-1.1-1.06-1.4-1.06-1.4-.86-.58.06-.58.06-.58.96.08 1.46.98 1.46.98.84 1.46 2.22 1.04 2.76.8.08-.62.32-1.04.58-1.28-2.14-.24-4.4-1.08-4.4-4.76 0-1.06.38-1.92.98-2.6-.1-.24-.42-1.24.1-2.56 0 0 .8-.26 2.62.98A9 9 0 0 1 12 5.46c.82 0 1.64.1 2.42.32 1.82-1.24 2.62-.98 2.62-.98.52 1.32.2 2.32.1 2.56.62.68.98 1.54.98 2.6 0 3.7-2.26 4.52-4.42 4.76.34.3.66.9.66 1.82v2.7c0 .26.18.56.68.46A9.5 9.5 0 0 0 12 2.5Z"/></svg><span class="repo-path">github.com/stvsever/<b>COMPASS-Engine</b></span><svg class="repo-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg></a>
+            <li class="sys"><div class="sys-head"><h3>aHFR-TokenSHAP</h3><span class="sys-meta">explainable AI</span></div>
+              <p>Adaptive hierarchy-aware Shapley attribution for binary LLM classification over structured clinical prompts, moving explanation from raw tokens to feature domains and leaf features.</p>
+              <div class="sys-tags"><span>Hierarchical Shapley</span><span>Feature attribution</span><span>Integrated gradients</span><span>Structured prompts</span></div>
+              <a class="repo-link" href="https://github.com/stvsever/aHFR_TokenSHAP" target="_blank" rel="noreferrer"><span class="repo-path">github.com/stvsever/<b>aHFR_TokenSHAP</b></span><svg class="repo-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg></a>
             </li>
-            <li class="sys"><div class="sys-head"><h3>PHOENIX Engine</h3><span class="sys-meta">closed-loop intervention design</span></div>
-              <p>A five-stage actor-critic workflow that turns free-text complaints into operationalized, evidence-based digital interventions, refined across iterative cycles with cross-cycle memory.</p>
-              <div class="sys-tags"><span>Actor-critic loops</span><span>HyDE RAG</span><span>Idiographic-nomothetic fusion</span></div>
-              <a class="repo-link" href="https://github.com/stvsever/ThesisMaster" target="_blank" rel="noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5a9.5 9.5 0 0 0-3 18.52c.48.1.66-.2.66-.46v-1.72c-2.68.58-3.24-1.14-3.24-1.14-.44-1.1-1.06-1.4-1.06-1.4-.86-.58.06-.58.06-.58.96.08 1.46.98 1.46.98.84 1.46 2.22 1.04 2.76.8.08-.62.32-1.04.58-1.28-2.14-.24-4.4-1.08-4.4-4.76 0-1.06.38-1.92.98-2.6-.1-.24-.42-1.24.1-2.56 0 0 .8-.26 2.62.98A9 9 0 0 1 12 5.46c.82 0 1.64.1 2.42.32 1.82-1.24 2.62-.98 2.62-.98.52 1.32.2 2.32.1 2.56.62.68.98 1.54.98 2.6 0 3.7-2.26 4.52-4.42 4.76.34.3.66.9.66 1.82v2.7c0 .26.18.56.68.46A9.5 9.5 0 0 0 12 2.5Z"/></svg><span class="repo-path">github.com/stvsever/<b>ThesisMaster</b></span><svg class="repo-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg></a>
+            <li class="sys"><div class="sys-head"><h3>Semantic Measurement Pipelines</h3><span class="sys-meta">embedding-based science</span></div>
+              <p>Transformer-embedding workflows for clinical construct audits, including hedonic versus eudaimonic scale loading and ontology-aligned biopsychosocial semantic analysis.</p>
+              <div class="sys-tags"><span>Embeddings</span><span>Cosine differentials</span><span>Permutation tests</span><span>Semantic loading</span></div>
+              <a class="repo-link" href="https://github.com/stvsever/research_paper_on_eudaimonia_in_healthcare" target="_blank" rel="noreferrer"><span class="repo-path">github.com/stvsever/<b>research_paper_on_eudaimonia_in_healthcare</b></span><svg class="repo-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg></a>
+              <a class="repo-link" href="https://github.com/stvsever/SystematicReview_on_BioPsychoSocialModel_in_ChronicPainResearch" target="_blank" rel="noreferrer"><span class="repo-path">github.com/stvsever/<b>SystematicReview_on_BioPsychoSocialModel_in_ChronicPainResearch</b></span><svg class="repo-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg></a>
             </li>
-            <li class="sys"><div class="sys-head"><h3>Human-Simulation Protocol</h3><span class="sys-meta">LLM behavioral simulators</span></div>
-              <p>A data-driven methodology for designing LLM simulators of human behavior, scoring generated data against human reliability ceilings with a standardized silicon-human fidelity score.</p>
-              <div class="sys-tags"><span>Stratified sampling</span><span>SHFS benchmark</span><span>XGBoost + TreeSHAP</span></div>
-              <a class="repo-link" href="https://github.com/stvsever/research_paper_on_protocol_for_human_simulation_design" target="_blank" rel="noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5a9.5 9.5 0 0 0-3 18.52c.48.1.66-.2.66-.46v-1.72c-2.68.58-3.24-1.14-3.24-1.14-.44-1.1-1.06-1.4-1.06-1.4-.86-.58.06-.58.06-.58.96.08 1.46.98 1.46.98.84 1.46 2.22 1.04 2.76.8.08-.62.32-1.04.58-1.28-2.14-.24-4.4-1.08-4.4-4.76 0-1.06.38-1.92.98-2.6-.1-.24-.42-1.24.1-2.56 0 0 .8-.26 2.62.98A9 9 0 0 1 12 5.46c.82 0 1.64.1 2.42.32 1.82-1.24 2.62-.98 2.62-.98.52 1.32.2 2.32.1 2.56.62.68.98 1.54.98 2.6 0 3.7-2.26 4.52-4.42 4.76.34.3.66.9.66 1.82v2.7c0 .26.18.56.68.46A9.5 9.5 0 0 0 12 2.5Z"/></svg><span class="repo-path">github.com/stvsever/<b>research_paper_on_protocol_for_human_simulation_design</b></span><svg class="repo-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg></a>
+            <li class="sys"><div class="sys-head"><h3>LLM Rating and Prediction Validation</h3><span class="sys-meta">model evaluation</span></div>
+              <p>Validation pipelines that compare LLM relevance estimates with user ratings, build correlation and confusion matrices, and expose where data quality or prompt design limits performance.</p>
+              <div class="sys-tags"><span>Correlation matrices</span><span>Confusion matrices</span><span>Binary relevance</span><span>Prompt evaluation</span></div>
+              <a class="repo-link" href="https://github.com/stvsever/MappingComparison_UsersLLM" target="_blank" rel="noreferrer"><span class="repo-path">github.com/stvsever/<b>MappingComparison_UsersLLM</b></span><svg class="repo-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg></a>
             </li>
           </ul>
         </article>
 
         <article class="cap-panel" data-cap-panel="ontology" hidden>
-          <p class="cap-lead">Taxonomies and evidence graphs that ground retrieval and constrain what a model is allowed to conclude.</p>
+          <p class="cap-lead">Ontology-grounded LLM systems that use explicit schemas, agent roles, critic loops, and constrained simulation spaces.</p>
           <ul class="sys-list">
-            <li class="sys"><div class="sys-head"><h3>Agentic GraphRAG platform</h3><span class="sys-meta">private &middot; biomedical</span></div>
-              <p>A full-stack platform for biomedical knowledge interaction: retrieval-augmented generation over an evidence graph, with ontology-based reasoning and agentic query planning.</p>
-              <div class="sys-tags"><span>GraphRAG</span><span>Hybrid retrieval</span><span>Evidence graphs</span><span class="tag-private">Private repo</span></div>
+            <li class="sys"><div class="sys-head"><h3>PHOENIX Engine</h3><span class="sys-meta">mental health applications</span></div>
+              <p>Closed-loop ontology-based agentic AI for adaptive idiographic modelling, from complaint operationalization to HUA time-series analysis, target selection, and HAPA intervention mapping.</p>
+              <div class="sys-tags"><span>Five ontologies</span><span>Actor-critic loops</span><span>HyDE retrieval</span><span>Idiographic modelling</span></div>
+              <a class="repo-link" href="https://github.com/stvsever/ThesisMaster" target="_blank" rel="noreferrer"><span class="repo-path">github.com/stvsever/<b>ThesisMaster</b></span><svg class="repo-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg></a>
             </li>
-            <li class="sys"><div class="sys-head"><h3>PHOENIX ontologies</h3><span class="sys-meta">five interlocking taxonomies</span></div>
-              <p>CRITERION, PREDICTOR, PERSON, CONTEXT and HAPA ontologies spanning DSM-5-TR, ICD-10 and RDoC, retrieved through a hybrid of dense embeddings, BM25 and fuzzy matching.</p>
-              <div class="sys-tags"><span>DSM-5-TR / ICD-10 / RDoC</span><span>Dense + BM25 + fuzzy</span><span>Ontology constraints</span></div>
+            <li class="sys"><div class="sys-head"><h3>COMPASS Engine</h3><span class="sys-meta">clinical phenotyping</span></div>
+              <p>Clinical Ontology-driven Multi-modal Predictive Agentic Support with orchestrator, executor, integrator, predictor, critic, and communicator agents for multimodal phenotype prediction.</p>
+              <div class="sys-tags"><span>Multi-agent workflow</span><span>Deviation maps</span><span>XAI evidence chains</span><span>Docker + HPC</span></div>
+              <a class="repo-link" href="https://github.com/stvsever/COMPASS-Engine" target="_blank" rel="noreferrer"><span class="repo-path">github.com/stvsever/<b>COMPASS-Engine</b></span><svg class="repo-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg></a>
             </li>
-            <li class="sys"><div class="sys-head"><h3>Simulation design ontology</h3><span class="sys-meta">configuration space</span></div>
-              <p>A machine-readable taxonomy of 1,149 design dimensions across 18 groups with 44 hard cross-tree constraints, sampled to configure behavioral simulators systematically instead of ad hoc.</p>
-              <div class="sys-tags"><span>1,149 dimensions</span><span>44 constraints</span><span>Stratified sampling</span></div>
+            <li class="sys"><div class="sys-head"><h3>Cyber-manipulation Susceptibility Simulation</h3><span class="sys-meta">political opinions</span></div>
+              <p>Ontology-based multi-agent simulation across PROFILE, ATTACK, and OPINION state spaces, with private and exposure-network layers for estimating directional manipulation effectivity.</p>
+              <div class="sys-tags"><span>PROFILE / ATTACK / OPINION</span><span>DISARM tactics</span><span>Exposure networks</span><span>LLM audits</span></div>
+              <a class="repo-link" href="https://github.com/stvsever/research_paper_on_cybermanipulation_susceptibility" target="_blank" rel="noreferrer"><span class="repo-path">github.com/stvsever/<b>research_paper_on_cybermanipulation_susceptibility</b></span><svg class="repo-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg></a>
+            </li>
+            <li class="sys"><div class="sys-head"><h3>Human-Simulation Design Protocol</h3><span class="sys-meta">silicon-human fidelity</span></div>
+              <p>Machine-readable ontology of 1,149 simulation design choices, 44 hard constraints, stratified configuration sampling, SHFS scoring, and XGBoost plus TreeSHAP protocol derivation.</p>
+              <div class="sys-tags"><span>1,149 leaves</span><span>44 constraints</span><span>SHFS</span><span>XGBoost + TreeSHAP</span></div>
+              <a class="repo-link" href="https://github.com/stvsever/research_paper_on_protocol_for_human_simulation_design" target="_blank" rel="noreferrer"><span class="repo-path">github.com/stvsever/<b>research_paper_on_protocol_for_human_simulation_design</b></span><svg class="repo-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg></a>
+            </li>
+            <li class="sys"><div class="sys-head"><h3>GraphRAG and Domain Ontologies</h3><span class="sys-meta">knowledge systems</span></div>
+              <p>Private biomedical GraphRAG assistant for CompNeuro knowledge exploration and ontology editing, plus PECAN2.0 ontology-backed recommendation logic for physical activity in oncology contexts.</p>
+              <div class="sys-tags"><span>GraphRAG</span><span>Ontology editing</span><span>FastAPI + Next.js</span><span class="tag-private">Private repos</span></div>
             </li>
           </ul>
         </article>
 
         <article class="cap-panel" data-cap-panel="measurement" hidden>
-          <p class="cap-lead">Idiographic time-series and network psychometrics on real clinical and ambulatory data.</p>
+          <p class="cap-lead">Behavioral measurement systems for ambulatory data, cognitive vulnerability, construct validity, and experimental cognition.</p>
           <ul class="sys-list">
             <li class="sys"><div class="sys-head"><h3>"Walk on" temporal networks</h3><span class="sys-meta">fibromyalgia EMA</span></div>
-              <p>Temporal network analysis of 1,474 EMA assessments fused with wrist-accelerometer ENMO, modelled with multilevel VAR to surface day-to-day drivers of physical activity.</p>
-              <div class="sys-tags"><span>EMA</span><span>ENMO accelerometry</span><span>mlVAR</span></div>
-              <a class="repo-link" href="https://github.com/stvsever/research_paper_on_physical_activity_in_fibromyalgia_patients" target="_blank" rel="noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5a9.5 9.5 0 0 0-3 18.52c.48.1.66-.2.66-.46v-1.72c-2.68.58-3.24-1.14-3.24-1.14-.44-1.1-1.06-1.4-1.06-1.4-.86-.58.06-.58.06-.58.96.08 1.46.98 1.46.98.84 1.46 2.22 1.04 2.76.8.08-.62.32-1.04.58-1.28-2.14-.24-4.4-1.08-4.4-4.76 0-1.06.38-1.92.98-2.6-.1-.24-.42-1.24.1-2.56 0 0 .8-.26 2.62.98A9 9 0 0 1 12 5.46c.82 0 1.64.1 2.42.32 1.82-1.24 2.62-.98 2.62-.98.52 1.32.2 2.32.1 2.56.62.68.98 1.54.98 2.6 0 3.7-2.26 4.52-4.42 4.76.34.3.66.9.66 1.82v2.7c0 .26.18.56.68.46A9.5 9.5 0 0 0 12 2.5Z"/></svg><span class="repo-path">github.com/stvsever/<b>research_paper_on_physical_activity_in_fibromyalgia_patients</b></span><svg class="repo-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg></a>
-            </li>
-            <li class="sys"><div class="sys-head"><h3>Hierarchical Updating Algorithm</h3><span class="sys-meta">PHOENIX core</span></div>
-              <p>Stationarity testing (ADF / KPSS), kernel-smoothed VAR(1) and L1-penalized gVAR with Ledoit-Wolf shrinkage, and adaptive idiographic weighting that scales with time-series readiness.</p>
-              <div class="sys-tags"><span>gVAR</span><span>ADF / KPSS</span><span>Ledoit-Wolf shrinkage</span></div>
+              <p>Reproducible EMA and accelerometry analysis with 1,474 completed assessments, ENMO activity data, partial-pooling mlVAR, S-GIMME checks, and person-level heterogeneity estimates.</p>
+              <div class="sys-tags"><span>EMA</span><span>ENMO accelerometry</span><span>mlVAR</span><span>S-GIMME</span></div>
+              <a class="repo-link" href="https://github.com/stvsever/research_paper_on_physical_activity_in_fibromyalgia_patients" target="_blank" rel="noreferrer"><span class="repo-path">github.com/stvsever/<b>research_paper_on_physical_activity_in_fibromyalgia_patients</b></span><svg class="repo-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg></a>
             </li>
             <li class="sys"><div class="sys-head"><h3>Emotion-conditioned bias grid</h3><span class="sys-meta">cyber-relevant decisions</span></div>
-              <p>Mapping of cognitive-bias vulnerability across 239 emotions and 200 bias dimensions, building a high-resolution surface of when and where reasoning is most exploitable.</p>
-              <div class="sys-tags"><span>239 x 200 grid</span><span>Embeddings</span><span>Mixed models</span></div>
-              <a class="repo-link" href="https://github.com/stvsever/research_paper_on_cognitive_biases_across_emotional_states_cyberrelevant" target="_blank" rel="noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5a9.5 9.5 0 0 0-3 18.52c.48.1.66-.2.66-.46v-1.72c-2.68.58-3.24-1.14-3.24-1.14-.44-1.1-1.06-1.4-1.06-1.4-.86-.58.06-.58.06-.58.96.08 1.46.98 1.46.98.84 1.46 2.22 1.04 2.76.8.08-.62.32-1.04.58-1.28-2.14-.24-4.4-1.08-4.4-4.76 0-1.06.38-1.92.98-2.6-.1-.24-.42-1.24.1-2.56 0 0 .8-.26 2.62.98A9 9 0 0 1 12 5.46c.82 0 1.64.1 2.42.32 1.82-1.24 2.62-.98 2.62-.98.52 1.32.2 2.32.1 2.56.62.68.98 1.54.98 2.6 0 3.7-2.26 4.52-4.42 4.76.34.3.66.9.66 1.82v2.7c0 .26.18.56.68.46A9.5 9.5 0 0 0 12 2.5Z"/></svg><span class="repo-path">github.com/stvsever/<b>research_paper_on_cognitive_biases_across_emotional_states_cyberrelevant</b></span><svg class="repo-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg></a>
+              <p>Hierarchical map of 200 cognitive biases across 239 emotional states, using affective component calibration, mixed-effects models, clustering, and robustness analysis.</p>
+              <div class="sys-tags"><span>239 emotions</span><span>200 biases</span><span>VACUS components</span><span>Mixed models</span></div>
+              <a class="repo-link" href="https://github.com/stvsever/research_paper_on_cognitive_biases_across_emotional_states_cyberrelevant" target="_blank" rel="noreferrer"><span class="repo-path">github.com/stvsever/<b>research_paper_on_cognitive_biases_across_emotional_states_cyberrelevant</b></span><svg class="repo-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg></a>
+            </li>
+            <li class="sys"><div class="sys-head"><h3>Experimental cognition and survey bias</h3><span class="sys-meta">cognitive flexibility</span></div>
+              <p>Experimental and proof-of-concept tools for measuring irrefutable reasoning, insight problem solving, and automatic detection of question-order bias in survey design.</p>
+              <div class="sys-tags"><span>PsychoPy</span><span>Insight tasks</span><span>R + Python analysis</span><span>Survey methodology</span></div>
+              <a class="repo-link" href="https://github.com/stvsever/research_paper_on_unfalsifiability" target="_blank" rel="noreferrer"><span class="repo-path">github.com/stvsever/<b>research_paper_on_unfalsifiability</b></span><svg class="repo-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg></a>
+              <a class="repo-link" href="https://github.com/stvsever/GEDRAGSECO_PROOF_OF_CONCEPT_BOQ" target="_blank" rel="noreferrer"><span class="repo-path">github.com/stvsever/<b>GEDRAGSECO_PROOF_OF_CONCEPT_BOQ</b></span><svg class="repo-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg></a>
             </li>
           </ul>
         </article>
 
-        <article class="cap-panel" data-cap-panel="compute" hidden>
-          <p class="cap-lead">Models you can audit and pipelines that run the same way on a laptop or a cluster.</p>
+        <article class="cap-panel" data-cap-panel="autonomy" hidden>
+          <p class="cap-lead">User-facing tools for cognitive security, feed control, cyber education, assessment practice, and AI-assisted learning.</p>
           <ul class="sys-list">
-            <li class="sys"><div class="sys-head"><h3>aHFR-TokenSHAP</h3><span class="sys-meta">explainable AI</span></div>
-              <p>An adaptive, hierarchy-aware Shapley method that explains binary LLM decisions over structured prompts, turning opaque token attributions into a readable hierarchy of influence.</p>
-              <div class="sys-tags"><span>Hierarchy-aware Shapley</span><span>Token attribution</span><span>XAI</span></div>
-              <a class="repo-link" href="https://github.com/stvsever/aHFR_TokenSHAP" target="_blank" rel="noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5a9.5 9.5 0 0 0-3 18.52c.48.1.66-.2.66-.46v-1.72c-2.68.58-3.24-1.14-3.24-1.14-.44-1.1-1.06-1.4-1.06-1.4-.86-.58.06-.58.06-.58.96.08 1.46.98 1.46.98.84 1.46 2.22 1.04 2.76.8.08-.62.32-1.04.58-1.28-2.14-.24-4.4-1.08-4.4-4.76 0-1.06.38-1.92.98-2.6-.1-.24-.42-1.24.1-2.56 0 0 .8-.26 2.62.98A9 9 0 0 1 12 5.46c.82 0 1.64.1 2.42.32 1.82-1.24 2.62-.98 2.62-.98.52 1.32.2 2.32.1 2.56.62.68.98 1.54.98 2.6 0 3.7-2.26 4.52-4.42 4.76.34.3.66.9.66 1.82v2.7c0 .26.18.56.68.46A9.5 9.5 0 0 0 12 2.5Z"/></svg><span class="repo-path">github.com/stvsever/<b>aHFR_TokenSHAP</b></span><svg class="repo-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg></a>
+            <li class="sys"><div class="sys-head"><h3>FeedPilot</h3><span class="sys-meta">goal-aligned feeds</span></div>
+              <p>Browser extension and cloud backend that score visible feed items against user-defined goals, explain each verdict, enforce safety gates, and keep platform engagement logic subordinate to user intent.</p>
+              <div class="sys-tags"><span>Browser extension</span><span>Cloudflare Worker</span><span>Supabase + Stripe</span><span class="tag-private">Private repo</span></div>
+              <a class="repo-link" href="https://steeryourfeed.com" target="_blank" rel="noreferrer"><span class="repo-path"><b>steeryourfeed.com</b></span><svg class="repo-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg></a>
             </li>
-            <li class="sys"><div class="sys-head"><h3>Reproducible research infrastructure</h3><span class="sys-meta">laptop to HPC</span></div>
-              <p>Docker for CPU and UI, Slurm + Apptainer for HPC, CI running smoke, unit and integration tests, and schema-enforced JSON / CSV data contracts so a run is identical anywhere.</p>
-              <div class="sys-tags"><span>Docker</span><span>Slurm + Apptainer</span><span>CI/CD</span><span>Schema contracts</span></div>
+            <li class="sys"><div class="sys-head"><h3>Cybersecurity Fundamentals</h3><span class="sys-meta">open courseware</span></div>
+              <p>Single-page interactive course covering cryptography, networks, web security, cloud, ATT&amp;CK, ATLAS, D3FEND, DISARM, incident response, threat intelligence, governance, exercises, and a mock exam.</p>
+              <div class="sys-tags"><span>MITRE ATT&amp;CK</span><span>ATLAS</span><span>DISARM</span><span>Open courseware</span></div>
+              <a class="repo-link" href="https://github.com/stvsever/Cybersecurity_Fundamentals" target="_blank" rel="noreferrer"><span class="repo-path">github.com/stvsever/<b>Cybersecurity_Fundamentals</b></span><svg class="repo-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg></a>
             </li>
-            <li class="sys"><div class="sys-head"><h3>LLM-as-judge evaluation</h3><span class="sys-meta">validation harness</span></div>
-              <p>Double-blind evaluation on a 38-dimension scale with linear mixed-effects models and equivalence testing, validated across thousands of expert-style quality ratings.</p>
-              <div class="sys-tags"><span>Mixed-effects models</span><span>Equivalence testing</span><span>Double-blind design</span></div>
+            <li class="sys"><div class="sys-head"><h3>Cognitive assessment and learning tools</h3><span class="sys-meta">browser + local AI</span></div>
+              <p>Static adaptive cognitive-assessment practice games, plus a local AI language tutor with vocabulary generation, scenario comprehension, audio, recall tests, and study analytics.</p>
+              <div class="sys-tags"><span>Adaptive testing</span><span>Working memory</span><span>AI tutoring</span><span>Local sessions</span></div>
+              <a class="repo-link" href="https://github.com/stvsever/HireVue_Practice_Cognitive_Assessments" target="_blank" rel="noreferrer"><span class="repo-path">github.com/stvsever/<b>HireVue_Practice_Cognitive_Assessments</b></span><svg class="repo-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg></a>
+              <a class="repo-link" href="https://github.com/stvsever/LearnLanguage" target="_blank" rel="noreferrer"><span class="repo-path">github.com/stvsever/<b>LearnLanguage</b></span><svg class="repo-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg></a>
             </li>
           </ul>
         </article>
@@ -352,8 +370,8 @@
 
       <div class="toolbox" data-reveal>
         <div class="tb-group"><h4>Languages</h4><div class="tb-tags"><span>Python</span><span>R</span><span>MATLAB</span><span>JavaScript</span><span>SQL</span><span>Shell</span><span>HTML/CSS</span><span>LaTeX</span></div></div>
-        <div class="tb-group"><h4>AI &amp; ML</h4><div class="tb-tags"><span>LLM agents</span><span>Multi-agent systems</span><span>Transformer deep nets</span><span>Gradient boosting</span><span>GraphRAG</span><span>RAG / HyDE</span><span>Ontology engineering</span><span>Explainable AI (SHAP)</span><span>Embeddings</span></div></div>
-        <div class="tb-group"><h4>Engineering &amp; infra</h4><div class="tb-tags"><span>Docker</span><span>Slurm + Apptainer</span><span>HPC</span><span>Flask</span><span>Pydantic</span><span>REST APIs</span><span>CI/CD</span><span>Git</span></div></div>
+        <div class="tb-group"><h4>ML &amp; inference</h4><div class="tb-tags"><span>Explainable AI</span><span>SHAP / TreeSHAP</span><span>XGBoost</span><span>Embeddings</span><span>Mixed-effects models</span><span>mlVAR</span><span>Semantic scoring</span><span>Permutation tests</span></div></div>
+        <div class="tb-group"><h4>Agents &amp; infra</h4><div class="tb-tags"><span>LLM agents</span><span>GraphRAG</span><span>Ontology engineering</span><span>RAG / HyDE</span><span>Pydantic schemas</span><span>Docker</span><span>Slurm + Apptainer</span><span>Cloudflare Workers</span><span>Supabase</span></div></div>
       </div>
     </section>
 
